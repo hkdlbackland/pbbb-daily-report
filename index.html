@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>👑 PBBB Daily Report</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;font-size:16px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeUp .25s ease}
+.section-nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid #fce7f3;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.section-nav::-webkit-scrollbar{display:none}
+.nav-inner{display:flex;gap:8px;padding:12px 16px;min-width:max-content}
+.nav-pill{padding:8px 16px;border-radius:99px;font-size:14px;font-weight:600;white-space:nowrap;border:1.5px solid #e5e7eb;color:#6b7280;background:#fff;cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
+.nav-pill.active{background:linear-gradient(135deg,#fb7185,#f472b6);color:#fff;border-color:transparent}
+.section-card{background:#fff;border-radius:16px;padding:18px;border:1px solid #fce7f3;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.stepper{display:flex;align-items:center;flex-shrink:0}
+.stepper button{width:38px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;border:1.5px solid #e5e7eb;background:#f9fafb;color:#6b7280;cursor:pointer;user-select:none}
+.stepper button:first-child{border-radius:10px 0 0 10px;border-right:0}
+.stepper button:last-child{border-radius:0 10px 10px 0;border-left:0}
+.stepper button:active{background:#d1d5db}
+.stepper input{width:48px;height:40px;text-align:center;font-weight:700;font-size:16px;border:1.5px solid #e5e7eb;background:#fff;-moz-appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.entry-card{border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border:2px solid}
+.entry-stepper{display:flex;align-items:center;flex-shrink:0}
+.entry-stepper button{width:50px;height:54px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;border:2px solid;background:#fff;cursor:pointer;user-select:none;transition:all .1s}
+.entry-stepper button:first-child{border-radius:14px 0 0 14px;border-right:0}
+.entry-stepper button:last-child{border-radius:0 14px 14px 0;border-left:0}
+.entry-stepper button:active{transform:scale(.92)}
+.entry-stepper input{width:60px;height:54px;text-align:center;font-weight:900;font-size:22px;border-top:2px solid;border-bottom:2px solid;border-left:0;border-right:0;background:#fff;-moz-appearance:textfield}
+.entry-stepper input::-webkit-outer-spin-button,.entry-stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.theme-amber button{border-color:#fbbf24;color:#b45309;background:#fffbeb}
+.theme-amber input{border-color:#fbbf24;color:#b45309}
+.theme-blue button{border-color:#60a5fa;color:#1d4ed8;background:#eff6ff}
+.theme-blue input{border-color:#60a5fa;color:#1d4ed8}
+.theme-violet button{border-color:#a78bfa;color:#6d28d9;background:#f5f3ff}
+.theme-violet input{border-color:#a78bfa;color:#6d28d9}
+.theme-rose button{border-color:#fb7185;color:#be123c;background:#fff1f2}
+.theme-rose input{border-color:#fb7185;color:#be123c}
+.person-chip{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fdf2f8,#fff1f2);border:2px solid #f9a8d4;border-radius:14px;padding:12px 16px;animation:fadeUp .25s ease}
+.p-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;background:linear-gradient(135deg,#fb7185,#f472b6);color:#fff}
+.p-name{flex:1;font-weight:700;font-size:16px;color:#374151}
+.p-remove{width:32px;height:32px;border-radius:8px;border:none;background:#fee2e2;color:#ef4444;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.p-remove:active{background:#fecaca;transform:scale(.9)}
+.auto-select{width:100%;border:2px dashed #f9a8d4;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;background:#fff;color:#6b7280;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;transition:all .15s}
+.auto-select:focus{outline:none;border-color:#f472b6;border-style:solid;box-shadow:0 0 0 3px rgba(244,114,182,.15)}
+.staff-card{background:#fff;border:2px solid #f9a8d4;border-radius:16px;margin-bottom:12px;animation:fadeUp .3s ease;position:relative;overflow:hidden}
+.staff-card-head{padding:16px;background:linear-gradient(135deg,#fff5f7,#fff1f2)}
+.staff-card .avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex-shrink:0;background:linear-gradient(135deg,#fb7185,#f472b6);color:#fff}
+.staff-name{font-weight:700;font-size:16px;color:#374151;flex:1}
+.remove-btn{width:34px;height:34px;border-radius:8px;border:none;background:#fee2e2;color:#ef4444;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.remove-btn:active{background:#fecaca;transform:scale(.9)}
+.role-chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.role-chip{display:flex;align-items:center;gap:5px;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid transparent;user-select:none}
+.role-chip.off{background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb}
+.role-chip.on-photo{background:#ffe4e6;color:#e11d48;border-color:#fda4af}
+.role-chip.on-asst{background:#fef3c7;color:#b45309;border-color:#fcd34d}
+.role-chip.on-sales{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.rating-body{padding:0 16px 16px;animation:fadeUp .25s ease}
+.role-section{margin-top:14px;padding-top:14px;border-top:1.5px solid #f3f4f6}
+.role-section:first-child{margin-top:6px;padding-top:0;border-top:none}
+.role-hdr{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;margin-bottom:12px}
+.star-row{margin-bottom:18px}
+.star-row:last-of-type{margin-bottom:0}
+.criteria-name{font-weight:700;font-size:15px;color:#374151;margin-bottom:3px}
+.criteria-desc{font-size:13px;color:#9ca3af;line-height:1.5;margin-bottom:8px}
+.stars-wrap{display:flex;align-items:center;gap:2px}
+.star{font-size:34px;cursor:pointer;transition:all .12s;color:#d1d5db;user-select:none;-webkit-user-select:none;padding:2px 3px;line-height:1}
+.star.filled{color:#f59e0b}
+.star:active{transform:scale(1.25)}
+.star-tag{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;margin-left:10px;white-space:nowrap}
+.level-desc{margin-top:8px;padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.5;animation:fadeUp .2s ease;border:1.5px solid}
+.level-desc.l1{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.level-desc.l2{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.level-desc.l3{background:#fefce8;color:#a16207;border-color:#fde68a}
+.level-desc.l4{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+.level-desc.l5{background:#f0fdfa;color:#0f766e;border-color:#99f6e4}
+.level-hint{margin-top:6px;font-size:13px;color:#d1d5db}
+.info-tag{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:4px 12px;border-radius:99px;font-weight:600}
+.sale-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.sale-row+.sale-row{border-top:1px solid #f3f4f6}
+.sale-label{display:flex;align-items:center;gap:6px;font-size:14px;color:#4b5563;font-weight:500}
+.cat-card{background:#fff;border-radius:16px;padding:16px;border:2px solid;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.note{font-size:13px;color:#9ca3af;margin-top:4px;line-height:1.5}
+.pkg-bar{height:12px;border-radius:99px;transition:width .4s ease}
+.conv-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.conv-row+.conv-row{border-top:1.5px solid #f3f4f6}
+.conv-pkg{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:#374151}
+.conv-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.summary-bar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:2px solid #fce7f3;padding:12px 16px}
+.gradient-btn{background:linear-gradient(135deg,#fb7185,#f472b6);color:#fff;font-weight:700;border:none;cursor:pointer;transition:transform .1s;border-radius:12px}
+.gradient-btn:active{transform:scale(.97)}
+.modal-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(2px)}
+.modal-box{background:#fff;border-radius:20px;padding:24px;margin:16px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);animation:fadeUp .25s ease}
+@keyframes confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(120px) rotate(720deg);opacity:0}}
+.confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confetti 1.2s ease forwards}
+.progress-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px}
+.progress-badge.done{background:#ecfdf5;color:#059669}
+.progress-badge.partial{background:#fef3c7;color:#b45309}
+.progress-badge.empty{background:#f3f4f6;color:#9ca3af}
+.auto-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;background:#f3e8ff;color:#7c3aed}
+.castle-auto-val{display:inline-flex;align-items:center;gap:6px;background:#f5f3ff;border-radius:10px;padding:8px 14px;font-weight:700;font-size:15px;color:#6d28d9}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="background:linear-gradient(135deg,#f9a8d4,#fb7185,#f472b6)" class="p-6 pb-10 text-white relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full" style="transform:translate(30px,-30px)"></div>
+  <div class="relative max-w-lg mx-auto">
+    <div class="text-sm opacity-70 mb-1 tracking-wider">👑 PRINCESS BEAUTY BOUTIQUE</div>
+    <div class="text-2xl font-bold mb-0.5">PBBB Daily Report</div>
+    <div class="text-sm opacity-50">公主化妝廳 · 每日銷售日報</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="section-nav" id="sectionNav">
+  <div class="nav-inner">
+    <a class="nav-pill active" data-sec="sec-basic" onclick="scrollToSec(event)">📅 基本</a>
+    <a class="nav-pill" data-sec="sec-staff" onclick="scrollToSec(event)">👥 同事 & 評分</a>
+    <a class="nav-pill" data-sec="sec-entry" onclick="scrollToSec(event)">🚪 入場</a>
+    <a class="nav-pill" data-sec="sec-sales" onclick="scrollToSec(event)">🛒 銷售</a>
+    <a class="nav-pill" data-sec="sec-remarks" onclick="scrollToSec(event)">📝 備註</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="max-w-lg mx-auto px-4 pb-40 space-y-4 mt-4">
+
+  <!-- ═══════ BASIC ═══════ -->
+  <section id="sec-basic" class="section-card">
+    <div class="flex items-center gap-3 mb-4"><span style="font-size:28px">📅</span><div><div class="font-extrabold text-lg text-gray-700">基本資料</div><div class="text-sm text-gray-400">日期同當值 IC</div></div></div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-bold text-gray-500 mb-2">日期 <span class="text-rose-400">*</span></label>
+        <input type="date" id="fDate" class="w-full border border-pink-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-rose-300 bg-pink-50">
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-500 mb-2">IC <span class="text-rose-400">*</span><span class="text-gray-400 font-normal ml-1">（最多 2 位）</span></label>
+        <div id="icChipList" class="space-y-2"></div>
+        <div id="icDropdownWrap" class="mt-2"><select id="icDropdown" class="auto-select" onchange="onICSelect(this)"><option value="">＋ 揀 IC 加入...</option></select></div>
+        <div id="icFullHint" class="hidden text-center py-3 mt-2"><span class="info-tag bg-emerald-50 text-emerald-600">✅ 已揀齊 2 位 IC</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ STAFF & RATING ═══════ -->
+  <section id="sec-staff">
+    <div class="section-card mb-3">
+      <div class="flex items-center gap-3"><span style="font-size:28px">👥</span><div><div class="font-extrabold text-lg text-gray-700">同事 & 工作評分</div><div class="text-sm text-gray-400">揀名 → 㩒崗位 → 即刻評分</div></div></div>
+      <div class="flex gap-2 mt-3 flex-wrap">
+        <span class="info-tag bg-rose-50 text-rose-600">📸 攝影師 4項</span>
+        <span class="info-tag bg-amber-50 text-amber-600">🤝 Assistant 3項</span>
+        <span class="info-tag bg-blue-50 text-blue-600">💼 Sales 3項</span>
+      </div>
+    </div>
+    <div id="staffList"></div>
+    <div id="staffDropdownWrap" class="mt-2"><select id="staffDropdown" class="auto-select" onchange="onStaffSelect(this)"><option value="">＋ 揀同事加入...</option></select></div>
+    <div id="allAddedHint" class="hidden text-center py-3 mt-2"><span class="info-tag bg-emerald-50 text-emerald-600">✅ 所有同事已加入</span></div>
+  </section>
+
+  <!-- ═══════ ENTRY ═══════ -->
+  <section id="sec-entry">
+    <div class="section-card mb-3">
+      <div class="flex items-center gap-3"><span style="font-size:28px">🚪</span><div><div class="font-extrabold text-lg text-gray-700">入場數量</div><div class="text-sm text-gray-400">㩒 ＋ ／ − 或直接打數字</div></div></div>
+    </div>
+    <div id="entryCards" class="space-y-3"></div>
+    <div id="entryBar" class="hidden section-card mt-3">
+      <div class="flex gap-0.5 rounded-lg overflow-hidden" style="height:12px">
+        <div id="barCrown" class="pkg-bar" style="width:0;background:#f59e0b"></div>
+        <div id="barParade" class="pkg-bar" style="width:0;background:#3b82f6"></div>
+        <div id="barCastle" class="pkg-bar" style="width:0;background:#8b5cf6"></div>
+        <div id="barRoyal" class="pkg-bar" style="width:0;background:#f43f5e"></div>
+      </div>
+      <div class="flex justify-between mt-2">
+        <span class="info-tag bg-amber-50 text-amber-700">👑 <span id="pctCrown">0</span></span>
+        <span class="info-tag bg-blue-50 text-blue-700">🎪 <span id="pctParade">0</span></span>
+        <span class="info-tag bg-violet-50 text-violet-700">🏰 <span id="pctCastle">0</span></span>
+        <span class="info-tag bg-rose-50 text-rose-700">👸 <span id="pctRoyal">0</span></span>
+      </div>
+      <div class="text-center mt-3"><span class="text-sm text-gray-400">總入場 </span><span id="totalEntry" class="text-2xl font-black text-rose-500">0</span><span class="text-sm text-gray-400"> 組</span></div>
+    </div>
+    <!-- Per-package conversion -->
+    <div id="pkgConv" class="hidden section-card mt-3">
+      <div class="flex items-center gap-2 mb-2"><span style="font-size:20px">📊</span><div class="font-bold text-base text-gray-700">各 Package 轉化 / 升級率</div></div>
+      <div class="text-xs text-gray-400 mb-3">入場 → 做書 或 Upgrade $1,980（需同時填入場 + 銷售先顯示）</div>
+      <div id="pkgConvBody"></div>
+    </div>
+  </section>
+
+  <!-- ═══════ SALES ═══════ -->
+  <section id="sec-sales">
+    <div class="section-card mb-3">
+      <div class="flex items-center gap-3"><span style="font-size:28px">🛒</span><div><div class="font-extrabold text-lg text-gray-700">銷售 Items</div><div class="text-sm text-gray-400">跟 Report 數字直接入</div></div></div>
+    </div>
+
+    <div id="salesItems" class="space-y-3">
+
+      <!-- ── 所有 $1,980 ── -->
+      <div class="cat-card border-pink-300" style="background:linear-gradient(135deg,#fff5f7,#fff0f3)">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">📊</span><span class="font-bold text-base text-pink-700">所有 $1,980</span></div>
+        <div class="note mb-3">Crown 正價 + Castle Upgrade + Royal 嘅 $1,980 合計</div>
+        <div class="sale-row"><span class="sale-label">📗 $1,980 Album</span><div class="stepper"><button type="button" onclick="adj('all1980Alb',-1)">−</button><input type="number" inputmode="numeric" id="all1980Alb" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('all1980Alb',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">📕 $1,980 Storybook</span><div class="stepper"><button type="button" onclick="adj('all1980Story',-1)">−</button><input type="number" inputmode="numeric" id="all1980Story" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('all1980Story',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-pink-600">= $<span id="rev_all1980">0</span></span></div>
+      </div>
+
+      <!-- ── Crown ── -->
+      <div class="cat-card border-amber-300">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">👑</span><span class="font-bold text-base text-amber-700">Crown</span></div>
+        <div class="note mb-3">正價 $1,980 已計入上方「所有 $1,980」</div>
+        <div class="sale-row"><span class="sale-label">📗 Crown 正價 $1,980</span><div class="stepper"><button type="button" onclick="adj('crownAlb1980',-1)">−</button><input type="number" inputmode="numeric" id="crownAlb1980" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('crownAlb1980',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">📙 $1,438 Album</span><div class="stepper"><button type="button" onclick="adj('alb1438',-1)">−</button><input type="number" inputmode="numeric" id="alb1438" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('alb1438',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-xs text-gray-400 mr-1">$1,438 部分</span><span class="text-sm font-bold text-amber-600">= $<span id="rev_crown1438">0</span></span></div>
+      </div>
+
+      <!-- ── Royal $1,980 ── -->
+      <div class="cat-card border-rose-300">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">👸</span><span class="font-bold text-base text-rose-700">Royal $1,980</span></div>
+        <div class="note mb-3">已計入上方「所有 $1,980」</div>
+        <div class="sale-row"><span class="sale-label">📗 $1,980 Album</span><div class="stepper"><button type="button" onclick="adj('royalAlb1980',-1)">−</button><input type="number" inputmode="numeric" id="royalAlb1980" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('royalAlb1980',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">📕 $1,980 Storybook</span><div class="stepper"><button type="button" onclick="adj('royalStory1980',-1)">−</button><input type="number" inputmode="numeric" id="royalStory1980" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('royalStory1980',1)">+</button></div></div>
+      </div>
+
+      <!-- ── Castle Upgrade AUTO ── -->
+      <div id="castleAutoCard" class="cat-card border-violet-300" style="border-style:dashed;background:linear-gradient(135deg,#faf5ff,#f5f3ff)">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xl">🏰</span>
+          <span class="font-bold text-base text-violet-700">Castle Upgrade $1,980</span>
+          <span class="auto-badge ml-auto">🔄 自動計算</span>
+        </div>
+        <div class="note mb-3">= 所有 $1,980 − Crown 正價 − Royal</div>
+        <div class="flex gap-3 flex-wrap">
+          <div class="castle-auto-val">📗 <span id="castleAlbAuto">0</span></div>
+          <div class="castle-auto-val">📕 <span id="castleStoryAuto">0</span></div>
+        </div>
+        <div id="castleWarn" class="hidden mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">⚠️ 數據有出入 — Crown正價 + Royal 超過「所有 $1,980」數量，請檢查</div>
+      </div>
+
+      <!-- ── Parade $1,500 ── -->
+      <div class="cat-card border-blue-200">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">🎪</span><span class="font-bold text-base text-blue-700">Parade $1,500</span></div>
+        <div class="sale-row"><span class="sale-label">📗 $1,500 Album</span><div class="stepper"><button type="button" onclick="adj('alb1500',-1)">−</button><input type="number" inputmode="numeric" id="alb1500" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('alb1500',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">📕 $1,500 Storybook</span><div class="stepper"><button type="button" onclick="adj('story1500',-1)">−</button><input type="number" inputmode="numeric" id="story1500" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('story1500',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-blue-600">= $<span id="rev_parade">0</span></span></div>
+      </div>
+
+      <!-- ── Add-on $1,688 ── -->
+      <div class="cat-card border-pink-300">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">📦</span><span class="font-bold text-base text-pink-700">Add-on $1,688</span></div>
+        <div class="note mb-3">加購多一本</div>
+        <div class="sale-row"><span class="sale-label">📗 $1,688 Album</span><div class="stepper"><button type="button" onclick="adj('addonAlb',-1)">−</button><input type="number" inputmode="numeric" id="addonAlb" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('addonAlb',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">📕 $1,688 Storybook</span><div class="stepper"><button type="button" onclick="adj('addonStory',-1)">−</button><input type="number" inputmode="numeric" id="addonStory" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('addonStory',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-pink-600">= $<span id="rev_addon">0</span></span></div>
+      </div>
+
+      <!-- ── Roving ── -->
+      <div class="cat-card border-emerald-200">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">🌳</span><span class="font-bold text-base text-emerald-700">BBB Roving Album</span></div>
+        <div class="note mb-3">包 30 分鐘戶外拍攝 + 30 分鐘底片全包</div>
+        <div class="sale-row"><span class="sale-label">💰 $1,688（原價）</span><div class="stepper"><button type="button" onclick="adj('rovFull',-1)">−</button><input type="number" inputmode="numeric" id="rovFull" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('rovFull',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">🏷️ $1,299（優惠價）</span><div class="stepper"><button type="button" onclick="adj('rovDisc',-1)">−</button><input type="number" inputmode="numeric" id="rovDisc" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('rovDisc',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-emerald-600">= $<span id="rev_roving">0</span></span></div>
+      </div>
+
+      <!-- ── Softcopy ── -->
+      <div class="cat-card border-cyan-200">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">💿</span><span class="font-bold text-base text-cyan-700">Softcopy $498</span></div>
+        <div class="note mb-3">只有買咗 Album 先可以加（Storybook ❌ · $1,438 ❌）<br>可加: <strong id="softMax" class="text-cyan-600">0</strong> 位</div>
+        <div class="sale-row"><span class="sale-label">💿 $498 Softcopy</span><div class="stepper"><button type="button" onclick="adj('softcopy',-1)">−</button><input type="number" inputmode="numeric" id="softcopy" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('softcopy',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-cyan-600">= $<span id="rev_soft">0</span></span></div>
+      </div>
+
+      <!-- ── 單買相 ── -->
+      <div class="cat-card border-gray-200">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">🖼️</span><span class="font-bold text-base text-gray-700">單買相</span></div>
+        <div class="note mb-3">跟 Report 數字直接打張數</div>
+        <div class="sale-row"><span class="sale-label">🖼️ $168 / 張</span><div class="stepper"><button type="button" onclick="adj('photo168',-1)">−</button><input type="number" inputmode="numeric" id="photo168" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('photo168',1)">+</button></div></div>
+        <div class="sale-row"><span class="sale-label">🖼️ $130 / 張</span><div class="stepper"><button type="button" onclick="adj('photo130',-1)">−</button><input type="number" inputmode="numeric" id="photo130" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('photo130',1)">+</button></div></div>
+        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-gray-600">= $<span id="rev_photo">0</span></span></div>
+      </div>
+
+    </div><!-- /salesItems -->
+
+    <!-- Total Revenue -->
+    <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-5 border border-rose-200 mt-3">
+      <div class="flex items-center justify-between">
+        <div><div class="text-sm text-gray-500">💰 Total Revenue</div><div id="liveRevenue" class="text-3xl font-black text-rose-600">$0</div></div>
+        <div class="text-right"><div class="text-sm text-gray-400">已售 Album/Book</div><div id="liveSold" class="text-xl font-black text-emerald-500">0 本</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ REMARKS ═══════ -->
+  <section id="sec-remarks" class="section-card">
+    <div class="flex items-center gap-3 mb-4"><span style="font-size:28px">📝</span><div><div class="font-extrabold text-lg text-gray-700">備註</div><div class="text-sm text-gray-400">今日有咩特別情況</div></div></div>
+    <textarea id="fRemarks" rows="3" placeholder="（可留空）" class="w-full border border-pink-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-rose-300 bg-pink-50 resize-none"></textarea>
+  </section>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="summary-bar">
+  <div class="max-w-lg mx-auto flex items-center justify-between">
+    <div><div class="text-sm text-gray-400">💰 Total Revenue</div><div id="bottomRev" class="text-2xl font-black text-rose-600">$0</div></div>
+    <button id="submitBtn" onclick="submitForm()" class="gradient-btn px-7 py-3.5 shadow-lg text-base">✅ 提交日報</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="errModal" class="hidden"><div class="modal-overlay" onclick="closeErr()"><div class="modal-box" onclick="event.stopPropagation()"><div class="text-4xl text-center mb-3">⚠️</div><div id="errMsg" class="text-base text-gray-600 text-center mb-5"></div><button onclick="closeErr()" class="w-full bg-rose-500 text-white font-bold py-3.5 rounded-xl text-base">知道了</button></div></div></div>
+<div id="confirmModal" class="hidden"><div class="modal-overlay"><div class="modal-box" onclick="event.stopPropagation()"><div class="text-4xl text-center mb-2">📋</div><div class="text-lg font-bold text-center text-gray-700 mb-4">確認提交？</div><div id="confirmBody" class="text-sm text-gray-500 space-y-2 mb-5 max-h-64 overflow-y-auto"></div><div class="flex gap-3"><button onclick="closeConfirm()" class="flex-1 bg-gray-100 text-gray-500 font-bold py-3.5 rounded-xl text-base">返回修改</button><button onclick="doSubmit()" class="flex-1 gradient-btn py-3.5 text-base">確認提交</button></div></div></div></div>
+<div id="successModal" class="hidden"><div class="modal-overlay"><div class="modal-box text-center relative overflow-hidden"><div id="confettiBox" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div><div class="relative"><div class="text-6xl mb-4">👑</div><div class="text-2xl font-bold text-rose-600 mb-2">提交成功！</div><div class="text-base text-gray-400 mb-6">日報已儲存</div><button onclick="resetForm()" class="gradient-btn px-8 py-3.5 shadow-md text-base">📝 再填一份</button></div></div></div></div>
+
+<script>
+/* ══════════ API URL ══════════ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbx9bGA43qOTImiaRNE4y2yDRUUeYT1vX-2cF5LCqUd35upY9981ODEhmjgWXBdWVsIM/exec';
+
+/* ══════════ DATA ══════════ */
+const allStaff=[{id:'s1',name:'Alice'},{id:'s2',name:'Bob'},{id:'s3',name:'Charlie'},{id:'s4',name:'Diana'},{id:'s5',name:'Elsa'},{id:'s6',name:'Fiona'}];
+const icList=[{id:'ic1',name:'Alice'},{id:'ic2',name:'Bob'},{id:'ic3',name:'Charlie'},{id:'ic4',name:'Diana'},{id:'ic5',name:'Elsa'},{id:'ic6',name:'Fiona'}];
+const IC_MAX=2;
+const ROLES=['photographer','assistant','sales'];
+const ROLE_LABEL={photographer:'📸 攝影師',assistant:'🤝 Assistant',sales:'💼 Sales'};
+const ROLE_ON_CLASS={photographer:'on-photo',assistant:'on-asst',sales:'on-sales'};
+const ROLE_COLOR={photographer:'#e11d48',assistant:'#b45309',sales:'#1d4ed8'};
+const STAR_LABELS=['','需要改善','未達標','合格','良好','優秀'];
+const STAR_TAG_CLS=['','text-red-600','text-orange-600','text-yellow-700','text-emerald-700','text-teal-700'];
+
+const CRITERIA={
+  sales:[
+    {key:'upsell',name:'升級銷售力',desc:'有冇成功推動客人 Upgrade 或 Add-on Album，並主動推介加購項目',levels:['','完全無主動推介，等客人自己揀','有提及但無跟進，推介力度不足','有推介 Upgrade / Add-on，做到基本流程','積極推介且自然唔硬銷，成功率高','每組客都主動推，客人開心升級，成功率極高']},
+    {key:'proactive',name:'主動性與同步處理能力',desc:'處理多組客人時能安排好、唔顧此失彼；空閒時主動幫團隊',levels:['','只顧自己手頭嘢，多組客時混亂甩漏','有嘗試兼顧但經常顧此失彼','基本兼顧到多組客，空閒時偶爾幫手','安排得好，主動幫整相簿 / 協助 Asst','統籌力強，團隊因佢運作更順暢']},
+    {key:'objection',name:'異議處理能力',desc:'客人唔買時，能否了解原因並作出合理回應',levels:['','客人一話唔買就即放棄，零回應','有嘗試回應但講唔出重點，欠說服力','了解客人原因，有基本合理回應','回應有理有據，能扭轉部分客人想法','處理異議自然到位，轉化率高']}
+  ],
+  photographer:[
+    {key:'efficiency',name:'拍攝效率',desc:'能否 15 分鐘內完成，double shot 受控、唔會 del 相太耐',levels:['','嚴重超時，del 相太耐，影響成日流程','經常超過 15 分鐘，double shot 過多','15 分鐘內完成，double shot 受控','效率高，時間充裕可處理突發情況','快靚正，時間控制極佳']},
+    {key:'quality',name:'相片質素',desc:'曝光、對焦、構圖（水平正、無 cut 手腳皇冠、留頭頂空間、影齊道具）',levels:['','曝光 / 對焦經常出錯，構圖問題多','間中有曝光或構圖瑕疵（cut 手腳 / 無留頭頂）','曝光正確、對焦準、構圖達標準','質素穩定有美感，細節位處理好','張張高水準，可作教學範例']},
+    {key:'direction',name:'指導與協作力',desc:'能否同 Asst 配合調整公主細節位；無 Asst 時自己識引導',levels:['','完全無同 Asst 配合，亦唔出聲引導','偶爾出聲但指示唔清晰，配合生疏','能同 Asst 配合調整，無 Asst 時識自己引導','主動溝通，指導清晰有效','默契十足，引導自然令公主輕鬆到位']},
+    {key:'output',name:'成品數量與一致性',desc:'50 張以上、笑容統一開懷、整體質素穩定',levels:['','少過 50 張，笑容質素參差','勉強夠數但唔一致，部分相無笑容','50 張以上，笑容統一，整體穩定','數量充足，每張都自然開懷','張張精品級，笑容燦爛一致']}
+  ],
+  assistant:[
+    {key:'interact',name:'互動與表情引導',desc:'同小公主玩得自然投入，聲線運用適當，能引導出自然笑容',levels:['','互動生硬，引導唔到笑容','有嘗試但聲線 / 語氣唔夠，笑容勉強','玩得自然，聲線適當，引導到基本笑容','投入有感染力，小朋友笑得開心自然','互動力極強，每個小朋友都真心笑']},
+    {key:'detail',name:'細節管理',desc:'頭髮 / 假髮尾 / 飾件（眼鏡、手錶、橡筋等）全部處理到位',levels:['','經常甩漏（假髮散、飾件未除、頭髮亂）','處理到部分但成日有遺漏','頭髮 / 假髮 / 飾件基本到位','細節執得好靚，主動留意每個位','零甩漏，每個細節完美處理']},
+    {key:'posing',name:'擺位、動作指導與應變',desc:'引導公主標準擺位及唔同 pose；企位唔擋鏡頭、遇到難影小朋友時有應變',levels:['','擺位指導唔到，難影小朋友束手無策','基本 pose 識教但唔夠標準，應變力弱','標準擺位做到，企位正確，有基本應變','Pose 多變自然，難搞小朋友都有辦法','引導專業流暢，任何小朋友都搞得掂']}
+  ]
+};
+
+const ENTRY_PKGS=[
+  {id:'crownQty',name:'Crown',icon:'👑',bg:'bg-amber-50',bd:'border-amber-200',theme:'theme-amber'},
+  {id:'paradeQty',name:'Parade',icon:'🎪',bg:'bg-blue-50',bd:'border-blue-200',theme:'theme-blue'},
+  {id:'castleQty',name:'Castle',icon:'🏰',bg:'bg-violet-50',bd:'border-violet-200',theme:'theme-violet'},
+  {id:'royalQty',name:'Royal',icon:'👸',bg:'bg-rose-50',bd:'border-rose-200',theme:'theme-rose'}
+];
+
+const ALL_SALE_IDS=['all1980Alb','all1980Story','crownAlb1980','alb1438','royalAlb1980','royalStory1980','alb1500','story1500','addonAlb','addonStory','rovFull','rovDisc','softcopy','photo168','photo130'];
+
+/* ══════════ STATE ══════════ */
+let selectedICs=[],addedStaff=[],staffRoles={},ratings={};
+const $=id=>document.getElementById(id);
+const v=id=>{const el=$(id);return el?parseInt(el.value)||0:0};
+const fmt=n=>n.toLocaleString();
+const pct=(a,b)=>b>0?Math.round(a/b*100)+'%':'—';
+
+/* ══════════ IC ══════════ */
+function onICSelect(sel){if(!sel.value||selectedICs.length>=IC_MAX)return;selectedICs.push(sel.value);sel.value='';renderICChips();refreshICDD();}
+function removeIC(id){selectedICs=selectedICs.filter(x=>x!==id);renderICChips();refreshICDD();}
+function renderICChips(){$('icChipList').innerHTML=selectedICs.map(id=>{const ic=icList.find(x=>x.id===id);return`<div class="person-chip"><div class="p-avatar">${ic.name[0]}</div><div class="p-name">${ic.name}</div><span class="info-tag bg-pink-100 text-pink-600">IC</span><button type="button" class="p-remove" onclick="removeIC('${id}')">✕</button></div>`;}).join('');}
+function refreshICDD(){const avail=icList.filter(ic=>!selectedICs.includes(ic.id));if(selectedICs.length>=IC_MAX){$('icDropdownWrap').classList.add('hidden');$('icFullHint').classList.remove('hidden');}else{$('icDropdownWrap').classList.remove('hidden');$('icFullHint').classList.add('hidden');$('icDropdown').innerHTML='<option value="">＋ 揀 IC 加入...</option>'+avail.map(ic=>`<option value="${ic.id}">${ic.name}</option>`).join('');}}
+
+/* ══════════ STAFF ══════════ */
+function saveAllRemarks(){addedStaff.forEach(sid=>{const ta=document.querySelector(`[data-rmk="${sid}"]`);if(ta){if(!ratings[sid])ratings[sid]={};ratings[sid]._remarks=ta.value;}});}
+function onStaffSelect(sel){if(!sel.value)return;addedStaff.push(sel.value);staffRoles[sel.value]=new Set();sel.value='';renderStaff();refreshStaffDD();}
+function removeStaff(sid){saveAllRemarks();addedStaff=addedStaff.filter(x=>x!==sid);delete staffRoles[sid];delete ratings[sid];renderStaff();refreshStaffDD();}
+function toggleRole(sid,role){saveAllRemarks();if(!staffRoles[sid])return;staffRoles[sid].has(role)?staffRoles[sid].delete(role):staffRoles[sid].add(role);renderStaff();}
+function setRating(sid,key,val){saveAllRemarks();if(!ratings[sid])ratings[sid]={};ratings[sid][key]=(ratings[sid][key]===val)?0:val;renderStaff();}
+function refreshStaffDD(){const avail=allStaff.filter(s=>!addedStaff.includes(s.id));if(!avail.length){$('staffDropdownWrap').classList.add('hidden');$('allAddedHint').classList.remove('hidden');}else{$('staffDropdownWrap').classList.remove('hidden');$('allAddedHint').classList.add('hidden');$('staffDropdown').innerHTML='<option value="">＋ 揀同事加入...</option>'+avail.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');}}
+
+function renderStaff(){
+  $('staffList').innerHTML=addedStaff.map(sid=>{
+    const s=allStaff.find(x=>x.id===sid);
+    const roles=staffRoles[sid]||new Set();
+    const activeRoles=[...roles];
+    if(!ratings[sid])ratings[sid]={};
+    let totalC=0,filledC=0;
+    activeRoles.forEach(r=>{(CRITERIA[r]||[]).forEach(c=>{totalC++;if(ratings[sid][r+'_'+c.key]>0)filledC++;});});
+    const pctClass=totalC===0?'empty':filledC===totalC?'done':'partial';
+    const pctText=totalC===0?'未揀崗位':filledC===totalC?'✅ 全部已評':`${filledC}/${totalC} 已評`;
+    const chips=ROLES.map(r=>`<div class="role-chip ${roles.has(r)?ROLE_ON_CLASS[r]:'off'}" onclick="toggleRole('${sid}','${r}')">${ROLE_LABEL[r]}</div>`).join('');
+    let ratingSections='';
+    if(activeRoles.length>0){
+      ratingSections='<div class="rating-body">';
+      activeRoles.forEach(role=>{
+        const criteria=CRITERIA[role]||[];
+        const color=ROLE_COLOR[role];
+        ratingSections+=`<div class="role-section"><div class="role-hdr" style="color:${color}">${ROLE_LABEL[role]}</div>`;
+        criteria.forEach(c=>{
+          const k=role+'_'+c.key;
+          const val=ratings[sid][k]||0;
+          const starsH=[1,2,3,4,5].map(i=>`<span class="star ${i<=val?'filled':''}" onclick="setRating('${sid}','${k}',${i})">★</span>`).join('');
+          const tagH=val>0?`<span class="star-tag ${STAR_TAG_CLS[val]}">${val} ${STAR_LABELS[val]}</span>`:'';
+          let descH='';
+          if(val>0){descH=`<div class="level-desc l${val}">${c.levels[val]}</div>`;}else{descH=`<div class="level-hint">（㩒星星評分）</div>`;}
+          ratingSections+=`<div class="star-row"><div class="criteria-name">${c.name}</div><div class="criteria-desc">${c.desc}</div><div class="stars-wrap">${starsH}${tagH}</div>${descH}</div>`;
+        });
+        ratingSections+='</div>';
+      });
+      const rmk=ratings[sid]._remarks||'';
+      ratingSections+=`<div style="margin-top:14px;padding-top:14px;border-top:1.5px solid #f3f4f6"><label class="text-sm font-bold text-gray-500 mb-2 block">💬 備註（${s.name}）</label><textarea data-rmk="${sid}" rows="2" placeholder="對 ${s.name} 嘅表現有咩補充？（可留空）" class="w-full border border-pink-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-rose-300 bg-pink-50 resize-none" oninput="if(!ratings['${sid}'])ratings['${sid}']={};ratings['${sid}']._remarks=this.value">${rmk}</textarea></div>`;
+      ratingSections+='</div>';
+    }
+    return`<div class="staff-card"><div class="staff-card-head"><div class="flex items-center gap-3"><div class="avatar">${s.name[0]}</div><div style="flex:1"><div class="flex items-center gap-2 flex-wrap"><span class="staff-name">${s.name}</span><span class="progress-badge ${pctClass}">${pctText}</span></div></div><button type="button" class="remove-btn" onclick="removeStaff('${sid}')">✕</button></div><div class="role-chips">${chips}</div></div>${ratingSections}</div>`;
+  }).join('');
+}
+
+/* ══════════ ENTRY ══════════ */
+function renderEntryCards(){
+  $('entryCards').innerHTML=ENTRY_PKGS.map(p=>`<div class="entry-card ${p.bg} ${p.bd}"><div style="display:flex;align-items:center;gap:12px;flex:1"><span style="font-size:32px">${p.icon}</span><span class="font-bold text-lg">${p.name}</span></div><div class="entry-stepper ${p.theme}"><button type="button" onclick="adjEntry('${p.id}',-1)">−</button><input type="number" inputmode="numeric" id="${p.id}" min="0" value="0" oninput="onEntryInput(this)" onfocus="this.select()"><button type="button" onclick="adjEntry('${p.id}',1)">+</button></div></div>`).join('');
+}
+function adjEntry(id,d){const el=$(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);recalc();}
+function onEntryInput(el){if(el.value<0||el.value==='')el.value=0;recalc();}
+
+function recalcEntry(){
+  const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
+  if(tot>0){
+    $('entryBar').classList.remove('hidden');
+    $('barCrown').style.width=(cq/tot*100)+'%';$('barParade').style.width=(pq/tot*100)+'%';$('barCastle').style.width=(sq/tot*100)+'%';$('barRoyal').style.width=(rq/tot*100)+'%';
+    $('pctCrown').textContent=Math.round(cq/tot*100)+'%';$('pctParade').textContent=Math.round(pq/tot*100)+'%';$('pctCastle').textContent=Math.round(sq/tot*100)+'%';$('pctRoyal').textContent=Math.round(rq/tot*100)+'%';
+    $('totalEntry').textContent=tot;
+  }else{$('entryBar').classList.add('hidden');}
+}
+
+/* ══════════ SALES & RECALC ══════════ */
+function adj(id,d){const el=$(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);recalc();}
+
+function getCastle(){
+  const cAlb=v('all1980Alb')-v('crownAlb1980')-v('royalAlb1980');
+  const cStory=v('all1980Story')-v('royalStory1980');
+  return{alb:cAlb,story:cStory,hasWarn:cAlb<0||cStory<0};
+}
+
+function recalc(){
+  recalcEntry();
+
+  /* Castle auto-calc */
+  const castle=getCastle();
+  $('castleAlbAuto').textContent=Math.max(0,castle.alb);
+  $('castleStoryAuto').textContent=Math.max(0,castle.story);
+  if(castle.hasWarn){$('castleWarn').classList.remove('hidden');$('castleAutoCard').style.borderColor='#fca5a5';}
+  else{$('castleWarn').classList.add('hidden');$('castleAutoCard').style.borderColor='';}
+
+  /* Per-card revenue */
+  $('rev_all1980').textContent=fmt((v('all1980Alb')+v('all1980Story'))*1980);
+  $('rev_crown1438').textContent=fmt(v('alb1438')*1438);
+  $('rev_parade').textContent=fmt((v('alb1500')+v('story1500'))*1500);
+  $('rev_addon').textContent=fmt((v('addonAlb')+v('addonStory'))*1688);
+  $('rev_roving').textContent=fmt(v('rovFull')*1688+v('rovDisc')*1299);
+  $('rev_soft').textContent=fmt(v('softcopy')*498);
+  $('rev_photo').textContent=fmt(v('photo168')*168+v('photo130')*130);
+
+  /* Softcopy max = all $1,980 Albums + $1,500 Albums + Add-on Albums */
+  $('softMax').textContent=v('all1980Alb')+v('alb1500')+v('addonAlb');
+
+  /* Total revenue (no double-count: 所有$1,980 is source of truth) */
+  const totalRev=(v('all1980Alb')+v('all1980Story'))*1980
+    +v('alb1438')*1438
+    +(v('alb1500')+v('story1500'))*1500
+    +(v('addonAlb')+v('addonStory'))*1688
+    +v('rovFull')*1688+v('rovDisc')*1299
+    +v('softcopy')*498
+    +v('photo168')*168+v('photo130')*130;
+  $('liveRevenue').textContent='$'+fmt(totalRev);
+  $('bottomRev').textContent='$'+fmt(totalRev);
+
+  /* Books sold */
+  const books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
+  $('liveSold').textContent=books+' 本';
+
+  recalcPkgConv();
+}
+
+function recalcPkgConv(){
+  const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
+  if(tot===0){$('pkgConv').classList.add('hidden');return;}
+
+  const crownBook=v('crownAlb1980')+v('alb1438');
+  const crownUp=v('crownAlb1980');
+  const paradeSold=v('alb1500')+v('story1500');
+  const castle=getCastle();
+  const castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
+  const royalSold=v('royalAlb1980')+v('royalStory1980');
+  const mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
+
+  $('pkgConv').classList.remove('hidden');
+  let h='';
+  if(cq>0) h+=convRow('👑','Crown','bg-amber-50 text-amber-700',`做書 ${pct(crownBook,cq)}`,'bg-rose-50 text-rose-600',`$1,980↑ ${pct(crownUp,cq)}`);
+  if(pq>0) h+=convRowSingle('🎪','Parade','bg-blue-50 text-blue-700',`做書 ${pct(paradeSold,pq)}`);
+  if(sq>0) h+=convRowSingle('🏰','Castle','bg-violet-50 text-violet-700',`升級$1,980 ${castle.hasWarn?'⚠️':pct(castleUp,sq)}`);
+  if(rq>0) h+=convRowSingle('👸','Royal','bg-rose-50 text-rose-700',`做書 ${pct(royalSold,rq)}`);
+  h+=convOverall(pct(mainBooks,tot));
+  $('pkgConvBody').innerHTML=h;
+}
+
+function convRow(icon,name,cls1,txt1,cls2,txt2){
+  return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><div class="conv-badges"><span class="info-tag ${cls1}">${txt1}</span><span class="info-tag ${cls2}">${txt2}</span></div></div>`;
+}
+function convRowSingle(icon,name,cls,txt){
+  return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><span class="info-tag ${cls}">${txt}</span></div>`;
+}
+function convOverall(val){
+  return`<div class="conv-row" style="border-top:2px solid #fce7f3;padding-top:12px;margin-top:4px"><span class="conv-pkg">📈 Overall</span><span class="font-bold text-lg text-rose-600">${val}</span></div>`;
+}
+
+/* ══════════ NAV ══════════ */
+function scrollToSec(e){e.preventDefault();const id=e.target.dataset.sec;const el=$(id);if(!el)return;const navH=document.querySelector('.section-nav').offsetHeight;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-navH-10,behavior:'smooth'});}
+function setupScrollSpy(){
+  const ids=['sec-basic','sec-staff','sec-entry','sec-sales','sec-remarks'];
+  const pills=document.querySelectorAll('.nav-pill');
+  const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=ids.indexOf(entry.target.id);if(idx>=0)pills.forEach((p,i)=>{p.classList.toggle('active',i===idx);if(i===idx){const nav=document.querySelector('.section-nav');nav.scrollTo({left:p.offsetLeft-nav.offsetWidth/2+p.offsetWidth/2,behavior:'smooth'});}});}});},{rootMargin:'-30% 0px -50% 0px'});
+  ids.forEach(id=>{const el=$(id);if(el)observer.observe(el);});
+}
+
+/* ══════════ SUBMIT ══════════ */
+function showErr(msg){$('errMsg').textContent=msg;$('errModal').classList.remove('hidden');}
+function closeErr(){$('errModal').classList.add('hidden');}
+function closeConfirm(){$('confirmModal').classList.add('hidden');}
+
+function submitForm(){
+  saveAllRemarks();
+  if(!$('fDate').value){showErr('請選擇日期');return;}
+  if(!selectedICs.length){showErr('請至少揀一位 IC');return;}
+  if(!addedStaff.length){showErr('請至少加一位同事');return;}
+  const noRole=addedStaff.filter(sid=>!staffRoles[sid]||staffRoles[sid].size===0);
+  if(noRole.length){showErr(noRole.map(sid=>allStaff.find(x=>x.id===sid).name).join('、')+' 未揀崗位');return;}
+  const tot=v('crownQty')+v('paradeQty')+v('castleQty')+v('royalQty');
+  if(tot===0){showErr('至少要有一個 Package 入場');return;}
+  const castle=getCastle();
+  if(castle.hasWarn){showErr('Castle 自動計算出現負數 — 請檢查「所有$1,980」、Crown正價、Royal 嘅數量');return;}
+
+  let rT=0,rF=0;
+  addedStaff.forEach(sid=>{[...(staffRoles[sid]||[])].forEach(r=>{(CRITERIA[r]||[]).forEach(c=>{rT++;if(ratings[sid]&&ratings[sid][r+'_'+c.key]>0)rF++;});});});
+  const rW=rF<rT?`<div class="bg-amber-50 rounded-lg p-3 text-sm text-amber-700">⚠️ 工作評分有 ${rT-rF} 項未填</div>`:'';
+
+  const totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130;
+  const icN=selectedICs.map(id=>icList.find(x=>x.id===id).name).join('、');
+  const tH=addedStaff.filter(sid=>staffRoles[sid]&&staffRoles[sid].size>0).map(sid=>{const s=allStaff.find(x=>x.id===sid);return`<span class="font-semibold">${s.name}</span> <span class="text-gray-400">${[...staffRoles[sid]].map(r=>ROLE_LABEL[r]).join(' ')}</span>`;}).join('<br>');
+
+  const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty');
+  const crownUp=v('crownAlb1980'),crownBook=crownUp+v('alb1438');
+  const castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
+  const paradeSold=v('alb1500')+v('story1500'),royalSold=v('royalAlb1980')+v('royalStory1980');
+  const mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
+  let convHtml='';
+  if(cq>0){convHtml+=`<div class="flex justify-between"><span>👑 Crown 做書</span><span class="font-bold">${pct(crownBook,cq)}</span></div>`;convHtml+=`<div class="flex justify-between"><span>👑 Crown $1,980↑</span><span class="font-bold">${pct(crownUp,cq)}</span></div>`;}
+  if(pq>0)convHtml+=`<div class="flex justify-between"><span>🎪 Parade 做書</span><span class="font-bold">${pct(paradeSold,pq)}</span></div>`;
+  if(sq>0)convHtml+=`<div class="flex justify-between"><span>🏰 Castle 升級</span><span class="font-bold">${pct(castleUp,sq)}</span></div>`;
+  if(rq>0)convHtml+=`<div class="flex justify-between"><span>👸 Royal 做書</span><span class="font-bold">${pct(royalSold,rq)}</span></div>`;
+  convHtml+=`<div class="flex justify-between border-t border-gray-200 pt-2 mt-2"><span class="font-bold">📈 Overall</span><span class="font-bold text-rose-600">${pct(mainBooks,tot)}</span></div>`;
+
+  $('confirmBody').innerHTML=`
+    <div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="flex justify-between"><span class="text-gray-400">📅 日期</span><span class="font-bold text-gray-700">${$('fDate').value}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">🧑‍💼 IC</span><span class="font-bold text-gray-700">${icN}</span></div>
+    </div>
+    <div class="bg-pink-50 rounded-lg p-3 text-sm">${tH}</div>
+    <div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="flex justify-between"><span class="text-gray-400">🚪 總入場</span><span class="font-bold text-gray-700">${tot} 組</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">👑 Crown</span><span>${cq}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">🎪 Parade</span><span>${pq}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">🏰 Castle</span><span>${sq}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">👸 Royal</span><span>${rq}</span></div>
+    </div>
+    <div class="bg-violet-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="font-bold text-violet-700 mb-1">📊 銷售拆分</div>
+      <div class="flex justify-between"><span>📊 所有$1,980</span><span>📗${v('all1980Alb')} 📕${v('all1980Story')}</span></div>
+      <div class="flex justify-between"><span>👑 Crown正價$1,980</span><span>${v('crownAlb1980')}</span></div>
+      <div class="flex justify-between"><span>👸 Royal</span><span>📗${v('royalAlb1980')} 📕${v('royalStory1980')}</span></div>
+      <div class="flex justify-between"><span>🏰 Castle（自動）</span><span>📗${Math.max(0,castle.alb)} 📕${Math.max(0,castle.story)}</span></div>
+      <div class="flex justify-between"><span>👑 $1,438</span><span>${v('alb1438')}</span></div>
+      <div class="flex justify-between"><span>🎪 Parade $1,500</span><span>📗${v('alb1500')} 📕${v('story1500')}</span></div>
+    </div>
+    <div class="bg-purple-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="font-bold text-purple-700 mb-1">📈 轉化 / 升級率</div>
+      ${convHtml}
+    </div>
+    <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg p-3 text-sm flex justify-between items-center border border-rose-200">
+      <span class="font-bold text-rose-600">💰 Total Revenue</span>
+      <span class="text-xl font-black text-rose-600">$${fmt(totalRev)}</span>
+    </div>
+    <div class="bg-pink-50 rounded-lg p-3 text-sm flex justify-between">
+      <span class="text-gray-400">⭐ 評分完成</span><span class="font-bold text-gray-700">${rF} / ${rT} 項</span>
+    </div>
+    ${rW}`;
+  $('confirmModal').classList.remove('hidden');
+}
+
+/* ══════════ 真正提交（POST 去 Google Sheet）══════════ */
+function doSubmit(){
+  closeConfirm();
+  saveAllRemarks();
+  var btn=$('submitBtn');
+  btn.disabled=true;
+  btn.textContent='⏳ 提交中...';
+
+  /* ── 計算數值 ── */
+  var castle=getCastle();
+  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980
+    +v('alb1438')*1438
+    +(v('alb1500')+v('story1500'))*1500
+    +(v('addonAlb')+v('addonStory'))*1688
+    +v('rovFull')*1688+v('rovDisc')*1299
+    +v('softcopy')*498
+    +v('photo168')*168+v('photo130')*130;
+  var books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
+  var ic1=selectedICs[0]?icList.find(function(x){return x.id===selectedICs[0]}).name:'';
+  var ic2=selectedICs[1]?icList.find(function(x){return x.id===selectedICs[1]}).name:'';
+
+  /* ── 組裝 payload（對應 Apps Script doPost） ── */
+  var payload={
+    daily:{
+      date:$('fDate').value,
+      ic1:ic1, ic2:ic2,
+      crown_entry:v('crownQty'), parade_entry:v('paradeQty'),
+      castle_entry:v('castleQty'), royal_entry:v('royalQty'),
+      total_entry:v('crownQty')+v('paradeQty')+v('castleQty')+v('royalQty'),
+      all1980_album:v('all1980Alb'), all1980_storybook:v('all1980Story'),
+      crown_album_1980:v('crownAlb1980'), crown_album_1438:v('alb1438'),
+      royal_album_1980:v('royalAlb1980'), royal_storybook_1980:v('royalStory1980'),
+      castle_album_auto:Math.max(0,castle.alb), castle_storybook_auto:Math.max(0,castle.story),
+      parade_album_1500:v('alb1500'), parade_storybook_1500:v('story1500'),
+      addon_album_1688:v('addonAlb'), addon_storybook_1688:v('addonStory'),
+      roving_1688:v('rovFull'), roving_1299:v('rovDisc'),
+      softcopy_498:v('softcopy'), photo_168:v('photo168'), photo_130:v('photo130'),
+      total_revenue:totalRev, total_books:books,
+      remarks:$('fRemarks').value
+    },
+    ratings:addedStaff.map(function(sid){
+      var s=allStaff.find(function(x){return x.id===sid});
+      var r=ratings[sid]||{};
+      return{
+        staff_name:s.name,
+        roles:staffRoles[sid]?[...staffRoles[sid]].join(','):'',
+        sales_upsell:    r['sales_upsell']||0,
+        sales_proactive: r['sales_proactive']||0,
+        sales_objection: r['sales_objection']||0,
+        photo_efficiency:r['photographer_efficiency']||0,
+        photo_quality:   r['photographer_quality']||0,
+        photo_direction: r['photographer_direction']||0,
+        photo_output:    r['photographer_output']||0,
+        asst_interact:   r['assistant_interact']||0,
+        asst_detail:     r['assistant_detail']||0,
+        asst_posing:     r['assistant_posing']||0,
+        staff_remarks:   r._remarks||''
+      };
+    })
+  };
+
+  /* ── POST 去 Apps Script ── */
+  fetch(API_URL,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(payload)
+  })
+  .then(function(){
+    btn.disabled=false;
+    btn.textContent='✅ 提交日報';
+    $('successModal').classList.remove('hidden');
+    spawnConfetti();
+  })
+  .catch(function(err){
+    btn.disabled=false;
+    btn.textContent='✅ 提交日報';
+    showErr('❌ 提交失敗：'+err.message+'\n請檢查網絡連線後再試');
+  });
+}
+
+function spawnConfetti(){const box=$('confettiBox');const colors=['#f472b6','#fb7185','#f59e0b','#8b5cf6','#3b82f6','#10b981'];for(let i=0;i<35;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.top='-10px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.6+'s';p.style.animationDuration=(.8+Math.random()*.6)+'s';box.appendChild(p);}setTimeout(()=>{box.innerHTML='';},2500);}
+
+function resetForm(){
+  $('successModal').classList.add('hidden');
+  selectedICs=[];addedStaff=[];staffRoles={};ratings={};
+  renderICChips();refreshICDD();renderStaff();refreshStaffDD();
+  $('fDate').value=new Date().toISOString().slice(0,10);
+  $('fRemarks').value='';
+  ENTRY_PKGS.forEach(p=>{const el=$(p.id);if(el)el.value=0;});
+  ALL_SALE_IDS.forEach(id=>{const el=$(id);if(el)el.value=0;});
+  $('entryBar').classList.add('hidden');
+  $('pkgConv').classList.add('hidden');
+  recalc();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════ INIT ══════════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  $('fDate').value=new Date().toISOString().slice(0,10);
+  refreshICDD();refreshStaffDD();
+  renderEntryCards();renderStaff();
+  setupScrollSpy();
+});
+</script>
+</body>
+</html>
