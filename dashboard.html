@@ -12,21 +12,21 @@
   <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
   <style>
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-    .motion-transition{transition:all .3s ease}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 
-/* ═══════════════════════════════════════
-   Motion / Icon helpers
-   ═══════════════════════════════════════ */
-function createMotionComponent(tag){return function MotionComp(props){var{initial,animate,exit,transition,whileHover,whileTap,layout,style,...rest}=props;var s=Object.assign({},style,{transition:"all 0.3s ease"});if(animate&&typeof animate==="object"&&!Array.isArray(animate)){if(typeof animate.opacity==="number")s.opacity=animate.opacity;if(animate.width!==undefined)s.width=animate.width;if(animate.height!==undefined)s.height=animate.height;var transforms=[];if(typeof animate.y==="number")transforms.push("translateY("+animate.y+"px)");if(typeof animate.x==="number")transforms.push("translateX("+animate.x+"px)");if(typeof animate.rotate==="number")transforms.push("rotate("+animate.rotate+"deg)");if(transforms.length>0)s.transform=transforms.join(" ")}return React.createElement(tag,Object.assign({},rest,{style:s}))};}
+var {useState,useMemo,useEffect}=React;
+var {LineChart,Line,BarChart,Bar,PieChart,Pie,Cell,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,Legend,RadarChart,Radar,PolarGrid,PolarAngleAxis,PolarRadiusAxis,AreaChart,Area}=Recharts;
+
+/* ═══ Motion / Icon helpers ═══ */
+function createMotionComponent(tag){return function(props){var{initial,animate,exit,transition,whileHover,whileTap,layout,style,...rest}=props;var s=Object.assign({},style,{transition:"all 0.3s ease"});if(animate&&typeof animate==="object"){if(typeof animate.opacity==="number")s.opacity=animate.opacity;if(animate.width!==undefined)s.width=animate.width;var transforms=[];if(typeof animate.y==="number")transforms.push("translateY("+animate.y+"px)");if(typeof animate.x==="number")transforms.push("translateX("+animate.x+"px)");if(typeof animate.rotate==="number")transforms.push("rotate("+animate.rotate+"deg)");if(transforms.length>0)s.transform=transforms.join(" ")}return React.createElement(tag,Object.assign({},rest,{style:s}))};}
 var motion={div:createMotionComponent("div"),span:createMotionComponent("span")};
 function AnimatePresence({children}){return children}
-
 function ChevronDown({className}){return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>}
 function Trophy({className}){return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>}
 function X({className}){return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
@@ -37,23 +37,10 @@ function Shield({className}){return <svg className={className} viewBox="0 0 24 2
 function Eye({className}){return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
 function EyeOff({className}){return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>}
 
-/* ═══════════════════════════════════════
-   React hooks & Recharts
-   ═══════════════════════════════════════ */
-var {useState,useMemo,useEffect}=React;
-var {LineChart,Line,BarChart,Bar,PieChart,Pie,Cell,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,Legend,RadarChart,Radar,PolarGrid,PolarAngleAxis,PolarRadiusAxis,AreaChart,Area}=Recharts;
-
-/* ═══════════════════════════════════════
-   Constants
-   ═══════════════════════════════════════ */
+/* ═══ Constants ═══ */
 const MONTH_NAMES=["","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
-const SEASON_FACTOR=[0.75,0.8,0.95,1.05,1,0.9,1.15,1.1,1,0.95,0.85,1.25];
 const PKG_COLORS={Crown:"#f59e0b",Parade:"#3b82f6",Castle:"#8b5cf6",Royal:"#f43f5e"};
-const INITIAL_STAFF=["Alice","Bob","Charlie","Diana","Elsa","Fiona"];
-const INITIAL_ICS=["Sze Wa","Anita","Wing"];
-const CUR_COLOR="#f43f5e";
-const PREVQ_COLOR="#f59e0b";
-const YOY_COLOR="#94a3b8";
+const CUR_COLOR="#f43f5e";const PREVQ_COLOR="#f59e0b";const YOY_COLOR="#94a3b8";
 const SETTINGS_PW="006086";
 const SHEET_API_URL="https://script.google.com/macros/s/AKfycbx9bGA43qOTImiaRNE4y2yDRUUeYT1vX-2cF5LCqUd35upY9981ODEhmjgWXBdWVsIM/exec";
 
@@ -77,7 +64,6 @@ const ALL_CRITERIA=[
   {key:"proactive",name:"主動性與同步處理能力",icon:"🚀",role:"sales",color:"#1d4ed8",desc:"處理多組客人時能否作出適當安排；空閒時主動幫助團隊"},
   {key:"objection",name:"異議處理能力",icon:"🛡️",role:"sales",color:"#1d4ed8",desc:"客人唔買時能否了解原因並作出合理回應"}
 ];
-
 var PHOTO_CRITERIA=ALL_CRITERIA.filter(c=>c.role==="photo");
 var ASST_CRITERIA=ALL_CRITERIA.filter(c=>c.role==="asst");
 var SALES_CRITERIA=ALL_CRITERIA.filter(c=>c.role==="sales");
@@ -87,204 +73,56 @@ var ROLE_CONFIG={
   sales:{label:"💼 銷售表現",criteria:SALES_CRITERIA,stroke:"#2563eb",fill:"#2563eb",bg:"from-blue-50 to-indigo-50",border:"border-blue-200"}
 };
 
-const NOTE_POOL=["影相速度有明顯進步，基本上都可以15分鐘內完成","構圖方面仲需要留意，成日cut到手腳","同Asst配合度唔錯，會主動溝通點影","Sell嘢時主動性提高咗，有嘗試推498同upgrade","處理多組客人嗰陣有啲手忙腳亂，建議加強同步處理","公主細節位做得幾好，頭飾假髮橡筋都有留意到","客人唔買嗰時未能夠好好handle，建議多練習異議處理","相片質素穩定，曝光對焦都OK，繼續保持","笑容引導方面做得好自然，小朋友好配合佢","擺位動作post方面要多啲變化，唔好太重複","成品數量OK但笑容統一性可以再好啲","空閒時有主動幫手整相簿同協助其他同事，態度正面","Del相時間偏長，影響到成個流程效率","升級銷售有進步，成功推到幾個Castle Upgrade","同難影嘅小朋友互動有改善，識用玩具吸引注意力","留意佢有時會忘記調整飾件同手腕橡筋","Double shot控制得幾好，唔使浪費太多時間揀相","Attendance穩定，無遲到無call sick，呢方面值得讚","需要多啲自信去lead客人做動作，唔好太被動","呢個月整體表現比上個月好，keep住進步","影相時留意要影齊所有道具，成日漏咗權杖","Sell嘢時講解清楚，客人feedback都幾正面","建議留意返曝光問題，有幾組overexpose咗","同小朋友玩得好投入但要留意時間控制","對焦準確度有提升，繼續保持呢個水準","處理投訴/不滿客人嗰陣表現冷靜專業","Roving影相效率可以再快啲，目標每小時3組","有嘗試cross-sell但手法可以再自然啲","同team溝通良好，有互相補位嘅意識","建議加強引導小朋友嘅表情，唔好淨係擺pose"];
-
-/* ═══════════════════════════════════════
-   Helper functions
-   ═══════════════════════════════════════ */
-function makeRandom(seed){return function(){seed=(seed+0x6d2b79f5)|0;var t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296};}
-function getScoreColor(score){if(score>=4.5)return{color:"#059669",bg:"bg-emerald-50",border:"border-emerald-200",label:"優秀",text:"text-emerald-600"};if(score>=3.5)return{color:"#2563eb",bg:"bg-blue-50",border:"border-blue-200",label:"良好",text:"text-blue-600"};if(score>=2.5)return{color:"#d97706",bg:"bg-amber-50",border:"border-amber-200",label:"待改進",text:"text-amber-600"};return{color:"#dc2626",bg:"bg-red-50",border:"border-red-200",label:"需加強",text:"text-red-600"};}
-
-function getStaffNotes(staffName,staffList,year,month){var idx=staffList.indexOf(staffName);var rand=makeRandom(idx*77777+year*1000+month*31+999);var count=1+Math.floor(rand()*3);var notes=[];var used={};for(var i=0;i<count;i++){var ni=Math.floor(rand()*NOTE_POOL.length);var tries=0;while(used[ni]&&tries<30){ni=(ni+1)%NOTE_POOL.length;tries++}used[ni]=true;notes.push(NOTE_POOL[ni])}return notes;}
-
-function getDailyStaffScores(staffName,staffList,year,month){var staffIdx=staffList.indexOf(staffName);var days=[];for(var day=1;day<=30;day++){var dayRand=makeRandom(year*100000+month*1000+day*13+staffIdx*7+42);var scores={};ALL_CRITERIA.forEach(c=>{scores[c.key]=+(2+dayRand()*3).toFixed(1)});var vals=Object.values(scores);var entry=Math.round(4+dayRand()*8);var albumRate=0.15+dayRand()*0.3;var sbRate=0.05+dayRand()*0.2;var albumSold=Math.round(entry*albumRate);var storybookSold=Math.round(entry*sbRate);var perCap=Math.round(800+dayRand()*1400);var convRate=entry>0?(albumSold+storybookSold)/entry:0;days.push({day,scores,avg:+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1),entry,albumSold,storybookSold,perCap,convRate})}return days;}
-
-/* ═══════════════════════════════════════════════════
-   transformAPIData – Google Sheet JSON → Dashboard
-   ═══════════════════════════════════════════════════
-   ⚠️ 如果你 Google Sheet 嘅欄位名唔同，改下面 r[...] 入面嘅 key
-*/
-function transformAPIData(apiData,staffList){
-  var dailyRows=apiData.daily||[];
-  var ratingRows=apiData.ratings||[];
-
-  var monthMap={};
-  dailyRows.forEach(function(row){
-    var ds=row.Date||"";var p=ds.split("-");if(p.length<3)return;
-    var year=parseInt(p[0]),month=parseInt(p[1]),day=parseInt(p[2]);
-    if(isNaN(year)||isNaN(month))return;
-    var key=year+"-"+month;
-    if(!monthMap[key])monthMap[key]={year:year,month:month,rows:[],dayDetails:[]};
-    monthMap[key].rows.push(row);
-    monthMap[key].dayDetails.push({day:day,row:row});
-  });
-
-  var ratingMap={};
-  ratingRows.forEach(function(row){
-    var ds=row.Date||"";var p=ds.split("-");if(p.length<2)return;
-    var year=parseInt(p[0]),month=parseInt(p[1]);if(isNaN(year)||isNaN(month))return;
-    var key=year+"-"+month;if(!ratingMap[key])ratingMap[key]={};
-    var staff=row.Staff_Name||"";if(!staff)return;
-    if(!ratingMap[key][staff])ratingMap[key][staff]=[];
-    ratingMap[key][staff].push(row);
-  });
-
-  var scoreFieldMap={efficiency:"photo_efficiency",quality:"photo_quality",direction:"photo_direction",output:"photo_output",interact:"asst_interact",detail:"asst_detail",posing:"asst_posing",upsell:"sales_upsell",proactive:"sales_proactive",objection:"sales_objection"};
-
-  var allMonths=[];
-  Object.keys(monthMap).forEach(function(key){
-    var mg=monthMap[key];var year=mg.year,month=mg.month,rows=mg.rows;
-    var crownEntry=0,paradeEntry=0,castleEntry=0,royalEntry=0;
-    var crownAlbum1980=0,crownAlbum1438=0,royalAlbum=0,royalStorybook=0;
-    var castleAlbum=0,castleStorybook=0,paradeAlbum=0,paradeStorybook=0;
-    var addOnAlbum=0,addOnStorybook=0,rovingAlbum=0,rovingSecond=0;
-    var addOnSoftcopy=0,print8R=0,print8RSecond=0,revenue=0;
-
-    rows.forEach(function(r){
-      crownEntry+=Number(r.Crown_Entry)||0;
-      paradeEntry+=Number(r.Parade_Entry)||0;
-      castleEntry+=Number(r.Castle_Entry)||0;
-      royalEntry+=Number(r.Royal_Entry)||0;
-      crownAlbum1980+=Number(r.Crown_Album_1980)||0;
-      crownAlbum1438+=Number(r.Crown_Album_1438)||0;
-      royalAlbum+=Number(r.Royal_Album)||0;
-      royalStorybook+=Number(r.Royal_Storybook)||0;
-      castleAlbum+=Number(r.Castle_Album)||0;
-      castleStorybook+=Number(r.Castle_Storybook)||0;
-      paradeAlbum+=Number(r.Parade_Album)||0;
-      paradeStorybook+=Number(r.Parade_Storybook)||0;
-      addOnAlbum+=Number(r.Addon_Album_1688)||0;
-      addOnStorybook+=Number(r.Addon_Storybook_1688)||0;
-      rovingAlbum+=Number(r.Roving_BBB_Album)||0;
-      rovingSecond+=Number(r.Roving_Second_Album)||0;
-      addOnSoftcopy+=Number(r.Softcopy_498)||0;
-      print8R+=Number(r.Print_8R_168)||0;
-      print8RSecond+=Number(r.Print_8R_130)||0;
-      revenue+=Number(r.Total_Revenue)||0;
-    });
-
-    var totalEntry=crownEntry+paradeEntry+castleEntry+royalEntry;
-    var bookings=totalEntry;
-    var crownSold=crownAlbum1980+crownAlbum1438;
-    var castleSold=castleAlbum+castleStorybook;
-    var paradeSold=paradeAlbum+paradeStorybook;
-    var royalSold=royalAlbum+royalStorybook;
-    var mainProducts=royalSold+castleSold+paradeSold+crownSold;
-    var freePrint168=bookings;
-    var totalProducts=mainProducts+addOnAlbum+addOnStorybook+rovingAlbum+rovingSecond+addOnSoftcopy+print8R+print8RSecond+freePrint168;
-    var netSales=Math.round(revenue*0.9);
-    var addOn1688Eligible=royalAlbum+royalStorybook+castleAlbum+castleStorybook+paradeAlbum+paradeStorybook+crownAlbum1980+rovingAlbum+rovingSecond;
-    var addOn498Eligible=royalAlbum+castleAlbum+paradeAlbum+crownAlbum1980+addOnAlbum;
-
-    var rKey=year+"-"+month;
-    var staffRatings={};
-    staffList.forEach(function(name){
-      var sRows=(ratingMap[rKey]&&ratingMap[rKey][name])||[];
-      if(sRows.length===0){staffRatings[name]={scores:{},avg:0,entry:0,albumSold:0,storybookSold:0,perCap:0,convRate:0};return}
-      var scores={};
-      Object.keys(scoreFieldMap).forEach(function(dk){
-        var sk=scoreFieldMap[dk];
-        var vals=sRows.map(function(r){return Number(r[sk])||0}).filter(function(v){return v>0});
-        scores[dk]=vals.length>0?+(vals.reduce(function(a,b){return a+b},0)/vals.length).toFixed(1):0;
-      });
-      var allV=Object.values(scores).filter(function(v){return v>0});
-      var avg=allV.length>0?+(allV.reduce(function(a,b){return a+b},0)/allV.length).toFixed(1):0;
-      staffRatings[name]={scores:scores,avg:avg,entry:0,albumSold:0,storybookSold:0,perCap:0,convRate:0};
-    });
-
-    allMonths.push({year,month,crownEntry,paradeEntry,castleEntry,royalEntry,totalEntry,royalAlbum,royalStorybook,castleAlbum,castleStorybook,paradeAlbum,paradeStorybook,crownAlbum1980,crownAlbum1438,addOnAlbum,addOnStorybook,rovingAlbum,rovingSecond,addOnSoftcopy,print8R,print8RSecond,freePrint168,totalProducts,mainProducts,revenue,netSales,bookings,staffRatings,addOn1688Eligible,addOn498Eligible,
-      perCap:Math.round(revenue/Math.max(bookings,1)),
-      bookingValue:Math.round(netSales/Math.max(bookings,1)),
-      conv:mainProducts/Math.max(totalEntry,1),
-      crownConv:crownSold/Math.max(crownEntry,1),
-      paradeConv:paradeSold/Math.max(paradeEntry,1),
-      castleConv:castleSold/Math.max(castleEntry,1),
-      royalConv:royalSold/Math.max(royalEntry,1),
-      addOn1688Rate:(addOnAlbum+addOnStorybook)/Math.max(addOn1688Eligible,1),
-      addOn498Rate:addOnSoftcopy/Math.max(addOn498Eligible,1)
-    });
-  });
-
-  allMonths.sort(function(a,b){return(a.year*100+a.month)-(b.year*100+b.month)});
-
-  var dailyData=[];
-  if(allMonths.length>0){
-    var latest=allMonths[allMonths.length-1];
-    var lKey=latest.year+"-"+latest.month;
-    var lMG=monthMap[lKey];
-    if(lMG&&lMG.dayDetails){
-      var dayMap={};
-      lMG.dayDetails.forEach(function(dd){
-        if(!dayMap[dd.day])dayMap[dd.day]={revenue:0,bookings:0};
-        var r=dd.row;
-        var bk=(Number(r.Crown_Entry)||0)+(Number(r.Parade_Entry)||0)+(Number(r.Castle_Entry)||0)+(Number(r.Royal_Entry)||0);
-        dayMap[dd.day].revenue+=Number(r.Total_Revenue)||0;
-        dayMap[dd.day].bookings+=bk;
-      });
-      Object.keys(dayMap).forEach(function(ds){
-        var day=parseInt(ds),d=dayMap[day],bk=Math.max(d.bookings,1);
-        dailyData.push({day:day,revenue:d.revenue,bookings:bk,perCap:Math.round(d.revenue/bk),prevPerCap:0});
-      });
-      dailyData.sort(function(a,b){return a.day-b.day});
-    }
-  }
-  return{months:allMonths,daily:dailyData};
-}
-
-/* ═══════════════════════════════════════
-   Sample data generator (fallback)
-   ═══════════════════════════════════════ */
-function generateAllData(staffList){
-  var rand=makeRandom(7777);var jitter=()=>0.85+rand()*0.3;var allMonths=[];
-  for(var year=2022;year<=2026;year++){var maxMonth=year===2026?9:12;var yearFactor=1+(year-2022)*0.04;
-    for(var month=1;month<=maxMonth;month++){var sf=SEASON_FACTOR[month-1]*yearFactor;
-      var crownEntry=Math.round(85*sf*jitter());var paradeEntry=Math.round(55*sf*jitter());var castleEntry=Math.round(40*sf*jitter());var royalEntry=Math.round(18*sf*jitter());var totalEntry=crownEntry+paradeEntry+castleEntry+royalEntry;
-      var royalSold=royalEntry;var royalAlbum=Math.round(royalSold*(0.55+rand()*0.15));var royalStorybook=Math.max(0,royalSold-royalAlbum);
-      var castleSold=Math.round(castleEntry*(0.35+rand()*0.2));var castleAlbum=Math.round(castleSold*(0.5+rand()*0.15));var castleStorybook=Math.max(0,castleSold-castleAlbum);
-      var paradeSold=Math.round(paradeEntry*(0.25+rand()*0.15));var paradeAlbum=Math.round(paradeSold*(0.6+rand()*0.15));var paradeStorybook=Math.max(0,paradeSold-paradeAlbum);
-      var crownSold=Math.round(crownEntry*(0.3+rand()*0.2));var crownAlbum1980=Math.round(crownSold*(0.4+rand()*0.15));var crownAlbum1438=Math.max(0,crownSold-crownAlbum1980);
-      var mainProducts=royalAlbum+royalStorybook+castleAlbum+castleStorybook+paradeAlbum+paradeStorybook+crownAlbum1980+crownAlbum1438;
-      var rovingAlbum=Math.round(totalEntry*0.04*jitter());var rovingSecond=Math.round(rovingAlbum*(0.3+rand()*0.2));
-      var addOn1688Eligible=royalAlbum+royalStorybook+castleAlbum+castleStorybook+paradeAlbum+paradeStorybook+crownAlbum1980+rovingAlbum+rovingSecond;
-      var addOnTotal=Math.round(addOn1688Eligible*(0.08+rand()*0.1));var addOnAlbum=Math.round(addOnTotal*0.6);var addOnStorybook=Math.max(0,addOnTotal-addOnAlbum);
-      var addOn498Eligible=royalAlbum+castleAlbum+paradeAlbum+crownAlbum1980+addOnAlbum;
-      var addOnSoftcopy=Math.round(addOn498Eligible*(0.25+rand()*0.2));
-      var print8R=Math.round(totalEntry*0.15*jitter());var print8RSecond=Math.round(totalEntry*0.1*jitter());
-      var bookings=totalEntry;var freePrint168=bookings;
-      var totalProducts=mainProducts+addOnAlbum+addOnStorybook+rovingAlbum+rovingSecond+addOnSoftcopy+print8R+print8RSecond+freePrint168;
-      var revenue=royalAlbum*1980+royalStorybook*1980+castleAlbum*1980+castleStorybook*1980+paradeAlbum*1500+paradeStorybook*1500+crownAlbum1980*1980+crownAlbum1438*1438+addOnAlbum*1688+addOnStorybook*1688+rovingAlbum*1688+rovingSecond*1299+addOnSoftcopy*498+print8R*168+print8RSecond*130+freePrint168*168;
-      var netSales=Math.round(revenue*(0.85+rand()*0.1));
-      var staffRatings={};staffList.forEach((name,idx)=>{var sr=makeRandom(year*10000+month*100+idx*7);var scores={};ALL_CRITERIA.forEach(c=>{scores[c.key]=+(2.5+sr()*2.5).toFixed(1)});var allS=Object.values(scores);var sEntry=Math.round(40+sr()*80);var sAlbumRate=0.15+sr()*0.3;var sSBRate=0.05+sr()*0.2;var sAlbumSold=Math.round(sEntry*sAlbumRate);var sStorybookSold=Math.round(sEntry*sSBRate);var sPerCap=Math.round(800+sr()*1400);var sConvRate=sEntry>0?(sAlbumSold+sStorybookSold)/sEntry:0;staffRatings[name]={scores,avg:+(allS.reduce((a,b)=>a+b,0)/allS.length).toFixed(1),entry:sEntry,albumSold:sAlbumSold,storybookSold:sStorybookSold,perCap:sPerCap,convRate:sConvRate}});
-      allMonths.push({year,month,crownEntry,paradeEntry,castleEntry,royalEntry,totalEntry,royalAlbum,royalStorybook,castleAlbum,castleStorybook,paradeAlbum,paradeStorybook,crownAlbum1980,crownAlbum1438,addOnAlbum,addOnStorybook,rovingAlbum,rovingSecond,addOnSoftcopy,print8R,print8RSecond,freePrint168,totalProducts,mainProducts,revenue,netSales,bookings,staffRatings,addOn1688Eligible,addOn498Eligible,perCap:Math.round(revenue/Math.max(bookings,1)),bookingValue:Math.round(netSales/Math.max(bookings,1)),conv:mainProducts/Math.max(totalEntry,1),crownConv:crownSold/Math.max(crownEntry,1),paradeConv:paradeSold/Math.max(paradeEntry,1),castleConv:castleSold/Math.max(castleEntry,1),royalConv:royalSold/Math.max(royalEntry,1),addOn1688Rate:(addOnAlbum+addOnStorybook)/Math.max(addOn1688Eligible,1),addOn498Rate:addOnSoftcopy/Math.max(addOn498Eligible,1)});
-    }
-  }
-  var currentMonth=allMonths.find(d=>d.year===2026&&d.month===9);
-  var prevMonthData=allMonths.find(d=>d.year===2026&&d.month===8);
-  var dailyRand=makeRandom(9999);var prevDailyRand=makeRandom(8888);var dailyData=[];
-  for(var day=1;day<=30;day++){var factor=(0.3+dailyRand()*1.4)/26;var prevFactor=(0.3+prevDailyRand()*1.4)/26;var dayRev=Math.round(currentMonth.revenue*factor);var dayBk=Math.max(1,Math.round(currentMonth.bookings*factor));var prevDayRev=prevMonthData?Math.round(prevMonthData.revenue*prevFactor):0;var prevDayBk=prevMonthData?Math.max(1,Math.round(prevMonthData.bookings*prevFactor)):1;dailyData.push({day,revenue:dayRev,bookings:dayBk,perCap:Math.round(dayRev/dayBk),prevPerCap:prevMonthData?Math.round(prevDayRev/prevDayBk):0})}
-  return{months:allMonths,daily:dailyData};
-}
-
-function generateICBizData(icList,year,month){return icList.map((name,idx)=>{var rand=makeRandom(idx*31337+year*1000+month*31+54321);var baseEntry=Math.round(60+rand()*100);var albumRate=0.2+rand()*0.35;var sbRate=0.05+rand()*0.2;var albumSold=Math.round(baseEntry*albumRate);var storybookSold=Math.round(baseEntry*sbRate);var totalBookSold=albumSold+storybookSold;var convRate=baseEntry>0?totalBookSold/baseEntry:0;var revenue=Math.round((albumSold*1780+storybookSold*1680+baseEntry*168)*(0.9+rand()*0.2));var bookings=baseEntry;var perCap=Math.round(revenue/Math.max(bookings,1));return{name,entry:baseEntry,albumSold,storybookSold,totalBookSold,convRate,revenue,bookings,perCap}})}
-function generateICYearData(icList,year){return icList.map((name,idx)=>{var maxM=year===2026?9:12;var totalEntry=0,totalAlbum=0,totalSB=0,totalRevenue=0,totalBookings=0;for(var m=1;m<=maxM;m++){var rand=makeRandom(idx*31337+year*1000+m*31+54321);var baseEntry=Math.round(60+rand()*100);var albumRate=0.2+rand()*0.35;var sbRate=0.05+rand()*0.2;var albumSold=Math.round(baseEntry*albumRate);var storybookSold=Math.round(baseEntry*sbRate);var rev=Math.round((albumSold*1780+storybookSold*1680+baseEntry*168)*(0.9+rand()*0.2));var bk=baseEntry;totalEntry+=baseEntry;totalAlbum+=albumSold;totalSB+=storybookSold;totalRevenue+=rev;totalBookings+=bk}var totalBookSold=totalAlbum+totalSB;var convRate=totalEntry>0?totalBookSold/totalEntry:0;var perCap=Math.round(totalRevenue/Math.max(totalBookings,1));return{name,entry:totalEntry,albumSold:totalAlbum,storybookSold:totalSB,totalBookSold,convRate,revenue:totalRevenue,bookings:totalBookings,perCap}})}
-
-/* ═══════════════════════════════════════
-   Format / UI helpers
-   ═══════════════════════════════════════ */
+/* ═══ Helpers ═══ */
+function getScoreColor(score){if(score>=4.5)return{color:"#059669",bg:"bg-emerald-50",border:"border-emerald-200",label:"優秀",text:"text-emerald-600"};if(score>=3.5)return{color:"#2563eb",bg:"bg-blue-50",border:"border-blue-200",label:"良好",text:"text-blue-600"};if(score>=2.5)return{color:"#d97706",bg:"bg-amber-50",border:"border-amber-200",label:"待改進",text:"text-amber-600"};return{color:"#dc2626",bg:"bg-red-50",border:"border-red-200",label:"需加強",text:"text-red-600"}}
 function formatMoney(n){if(n==null)return"—";return"$"+n.toLocaleString()}
 function formatNum(n){if(n==null)return"0";return n.toLocaleString()}
 function formatPct(n){if(n==null)return"—";return(n*100).toFixed(1)+"%"}
 function pctChange(cur,prev){if(!prev||prev===0)return null;return((cur-prev)/Math.abs(prev))*100}
 
+/* ═══ transformAPIData ═══ */
+function transformAPIData(apiData,staffList){
+  var dailyRows=apiData.daily||[];var ratingRows=apiData.ratings||[];
+  var monthMap={};
+  dailyRows.forEach(function(row){var ds=row.Date||"";var p=ds.split("-");if(p.length<3)return;var year=parseInt(p[0]),month=parseInt(p[1]),day=parseInt(p[2]);if(isNaN(year)||isNaN(month))return;var key=year+"-"+month;if(!monthMap[key])monthMap[key]={year,month,rows:[],dayDetails:[]};monthMap[key].rows.push(row);monthMap[key].dayDetails.push({day,row})});
+  var ratingMap={};
+  ratingRows.forEach(function(row){var ds=row.Date||"";var p=ds.split("-");if(p.length<2)return;var year=parseInt(p[0]),month=parseInt(p[1]);if(isNaN(year)||isNaN(month))return;var key=year+"-"+month;if(!ratingMap[key])ratingMap[key]={};var staff=row.Staff_Name||"";if(!staff)return;if(!ratingMap[key][staff])ratingMap[key][staff]=[];ratingMap[key][staff].push(row)});
+  var scoreFieldMap={efficiency:"photo_efficiency",quality:"photo_quality",direction:"photo_direction",output:"photo_output",interact:"asst_interact",detail:"asst_detail",posing:"asst_posing",upsell:"sales_upsell",proactive:"sales_proactive",objection:"sales_objection"};
+  var allMonths=[];
+  Object.keys(monthMap).forEach(function(key){
+    var mg=monthMap[key];var year=mg.year,month=mg.month,rows=mg.rows;
+    var crownEntry=0,paradeEntry=0,castleEntry=0,royalEntry=0;var crownAlbum1980=0,crownAlbum1438=0,royalAlbum=0,royalStorybook=0;var castleAlbum=0,castleStorybook=0,paradeAlbum=0,paradeStorybook=0;var addOnAlbum=0,addOnStorybook=0,rovingAlbum=0,rovingSecond=0;var addOnSoftcopy=0,print8R=0,print8RSecond=0,revenue=0;
+    rows.forEach(function(r){crownEntry+=Number(r.Crown_Entry)||0;paradeEntry+=Number(r.Parade_Entry)||0;castleEntry+=Number(r.Castle_Entry)||0;royalEntry+=Number(r.Royal_Entry)||0;crownAlbum1980+=Number(r.Crown_Album_1980)||0;crownAlbum1438+=Number(r.Crown_Album_1438)||0;royalAlbum+=Number(r.Royal_Album)||0;royalStorybook+=Number(r.Royal_Storybook)||0;castleAlbum+=Number(r.Castle_Album)||0;castleStorybook+=Number(r.Castle_Storybook)||0;paradeAlbum+=Number(r.Parade_Album)||0;paradeStorybook+=Number(r.Parade_Storybook)||0;addOnAlbum+=Number(r.Addon_Album_1688)||0;addOnStorybook+=Number(r.Addon_Storybook_1688)||0;rovingAlbum+=Number(r.Roving_BBB_Album)||0;rovingSecond+=Number(r.Roving_Second_Album)||0;addOnSoftcopy+=Number(r.Softcopy_498)||0;print8R+=Number(r.Print_8R_168)||0;print8RSecond+=Number(r.Print_8R_130)||0;revenue+=Number(r.Total_Revenue)||0});
+    var totalEntry=crownEntry+paradeEntry+castleEntry+royalEntry;var bookings=totalEntry;
+    var crownSold=crownAlbum1980+crownAlbum1438;var castleSold=castleAlbum+castleStorybook;var paradeSold=paradeAlbum+paradeStorybook;var royalSold=royalAlbum+royalStorybook;
+    var mainProducts=royalSold+castleSold+paradeSold+crownSold;var freePrint168=bookings;
+    var totalProducts=mainProducts+addOnAlbum+addOnStorybook+rovingAlbum+rovingSecond+addOnSoftcopy+print8R+print8RSecond+freePrint168;
+    var netSales=Math.round(revenue*0.9);
+    var addOn1688Eligible=royalAlbum+royalStorybook+castleAlbum+castleStorybook+paradeAlbum+paradeStorybook+crownAlbum1980+rovingAlbum+rovingSecond;
+    var addOn498Eligible=royalAlbum+castleAlbum+paradeAlbum+crownAlbum1980+addOnAlbum;
+    var rKey=year+"-"+month;var staffRatings={};
+    staffList.forEach(function(name){var sRows=(ratingMap[rKey]&&ratingMap[rKey][name])||[];if(sRows.length===0){staffRatings[name]={scores:{},avg:0};return}var scores={};Object.keys(scoreFieldMap).forEach(function(dk){var sk=scoreFieldMap[dk];var vals=sRows.map(function(r){return Number(r[sk])||0}).filter(function(v){return v>0});scores[dk]=vals.length>0?+(vals.reduce(function(a,b){return a+b},0)/vals.length).toFixed(1):0});var allV=Object.values(scores).filter(function(v){return v>0});staffRatings[name]={scores,avg:allV.length>0?+(allV.reduce(function(a,b){return a+b},0)/allV.length).toFixed(1):0}});
+    allMonths.push({year,month,crownEntry,paradeEntry,castleEntry,royalEntry,totalEntry,royalAlbum,royalStorybook,castleAlbum,castleStorybook,paradeAlbum,paradeStorybook,crownAlbum1980,crownAlbum1438,addOnAlbum,addOnStorybook,rovingAlbum,rovingSecond,addOnSoftcopy,print8R,print8RSecond,freePrint168,totalProducts,mainProducts,revenue,netSales,bookings,staffRatings,addOn1688Eligible,addOn498Eligible,
+      perCap:Math.round(revenue/Math.max(bookings,1)),bookingValue:Math.round(netSales/Math.max(bookings,1)),
+      conv:mainProducts/Math.max(totalEntry,1),crownConv:crownSold/Math.max(crownEntry,1),paradeConv:paradeSold/Math.max(paradeEntry,1),castleConv:castleSold/Math.max(castleEntry,1),royalConv:royalSold/Math.max(royalEntry,1),
+      addOn1688Rate:(addOnAlbum+addOnStorybook)/Math.max(addOn1688Eligible,1),addOn498Rate:addOnSoftcopy/Math.max(addOn498Eligible,1)})
+  });
+  allMonths.sort(function(a,b){return(a.year*100+a.month)-(b.year*100+b.month)});
+  var dailyData=[];
+  if(allMonths.length>0){var latest=allMonths[allMonths.length-1];var lKey=latest.year+"-"+latest.month;var lMG=monthMap[lKey];if(lMG&&lMG.dayDetails){var dayMap={};lMG.dayDetails.forEach(function(dd){if(!dayMap[dd.day])dayMap[dd.day]={revenue:0,bookings:0};var r=dd.row;dayMap[dd.day].revenue+=Number(r.Total_Revenue)||0;dayMap[dd.day].bookings+=(Number(r.Crown_Entry)||0)+(Number(r.Parade_Entry)||0)+(Number(r.Castle_Entry)||0)+(Number(r.Royal_Entry)||0)});Object.keys(dayMap).forEach(function(ds){var day=parseInt(ds),d=dayMap[day],bk=Math.max(d.bookings,1);dailyData.push({day,revenue:d.revenue,bookings:bk,perCap:Math.round(d.revenue/bk),prevPerCap:0})});dailyData.sort(function(a,b){return a.day-b.day})}}
+  return{months:allMonths,daily:dailyData};
+}
+
+/* ═══ UI Components ═══ */
 function ChangeBadge({pct,label}){if(pct==null)return null;var isUp=pct>=0;return(<span className={"inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap "+(isUp?"bg-emerald-50 text-emerald-600":"bg-red-50 text-red-600")}>{label?label+" ":""}{isUp?"▲":"▼"}{Math.abs(pct).toFixed(1)}%</span>)}
-
 function MomBadge({current,previous,isPct,prevLabel,tag}){if(previous==null||previous===0)return null;var diff=isPct?(current-previous)*100:((current-previous)/previous)*100;var isUp=diff>=0;return(<div className="flex flex-col gap-0.5 mt-0.5">{prevLabel&&<span className="text-xs text-gray-400">{tag||"上月"} <span className="font-bold text-gray-500">{prevLabel}</span></span>}<span className={isUp?"inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 w-fit":"inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 w-fit"}>{isUp?"▲":"▼"}{Math.abs(diff).toFixed(1)}%</span></div>)}
-
 function KPICard({icon,label,value,subtitle,badges}){return(<div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="text-2xl mb-1">{icon}</div><div className="text-xs text-gray-400 font-semibold mb-1">{label}</div><div className="text-lg font-black text-gray-800">{value}</div>{subtitle&&<div className="text-xs text-gray-400 mt-0.5">{subtitle}</div>}{badges}</div>)}
-
 function YearMonthSelector({selYear,selMon,years,monthsForYear,onYearChange,onMonthChange}){var ds="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50 focus:outline-none focus:ring-2 focus:ring-rose-300";return(<div className="flex gap-2 items-center"><select value={selYear} onChange={e=>onYearChange(parseInt(e.target.value))} className={ds}>{years.map(y=><option key={y} value={y}>{y}年</option>)}</select><select value={selMon} onChange={e=>onMonthChange(parseInt(e.target.value))} className={ds}>{monthsForYear.map(m=><option key={m} value={m}>{m}月</option>)}</select></div>)}
-
 function CircleScore({score,size=56,color}){var radius=(size-8)/2;var circumference=2*Math.PI*radius;var offset=circumference*(1-(score/5));return(<svg width={size} height={size}><circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth={4}/><circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={4} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{transform:"rotate(-90deg)",transformOrigin:"center"}}/><text x={size/2} y={size/2} textAnchor="middle" dominantBaseline="central" fontSize={size>50?15:13} fontWeight="bold" fill={color}>{score}</text></svg>)}
+function CustomPieTooltip(props){if(props.active&&props.payload&&props.payload.length>0){var data=props.payload[0].payload;return(<div className="bg-white rounded-xl shadow-lg border border-gray-200 px-4 py-3"><div className="font-bold text-sm text-gray-700">{data.name}</div><div className="text-sm text-gray-500 mt-1">數量：<span className="font-bold text-gray-800">{data.value} 組</span></div><div className="text-sm text-gray-500">佔比：<span className="font-bold text-gray-800">{data.pct}%</span></div></div>)}return null}
+
+function EmptyState({icon,title,subtitle}){return(<div className="py-16 text-center"><div className="text-5xl mb-3">{icon||"📭"}</div><div className="text-base font-bold text-gray-400">{title||"暫無數據"}</div>{subtitle&&<div className="text-sm text-gray-300 mt-1.5">{subtitle}</div>}</div>)}
+function EmptyCard({icon,title,subtitle}){return(<div className="bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200 p-10 text-center"><div className="text-4xl mb-3">{icon||"📭"}</div><div className="text-sm font-bold text-gray-400">{title||"暫無數據"}</div>{subtitle&&<div className="text-xs text-gray-300 mt-1.5">{subtitle}</div>}</div>)}
 
 function SingleRadarCard({role,scores}){var cfg=ROLE_CONFIG[role];var radarData=cfg.criteria.map(c=>({name:c.icon,fullName:c.name,desc:c.desc,val:scores[c.key]||0,fullMark:5}));var roleScores=cfg.criteria.map(c=>scores[c.key]||0);var roleAvg=roleScores.length>0?+(roleScores.reduce((a,b)=>a+b,0)/roleScores.length).toFixed(1):0;var sc=getScoreColor(roleAvg);return(
   <div className={"bg-gradient-to-b "+cfg.bg+" rounded-2xl border "+cfg.border+" p-3 flex flex-col items-center"}>
@@ -295,10 +133,6 @@ function SingleRadarCard({role,scores}){var cfg=ROLE_CONFIG[role];var radarData=
   </div>
 )}
 
-function CustomPieTooltip(props){if(props.active&&props.payload&&props.payload.length>0){var data=props.payload[0].payload;return(<div className="bg-white rounded-xl shadow-lg border border-gray-200 px-4 py-3"><div className="font-bold text-sm text-gray-700">{data.name}</div><div className="text-sm text-gray-500 mt-1">數量：<span className="font-bold text-gray-800">{data.value} 組</span></div><div className="text-sm text-gray-500">佔比：<span className="font-bold text-gray-800">{data.pct}%</span></div></div>)}return null}
-
-function aggregateMonthData(dataArr){if(!dataArr||dataArr.length===0)return null;var r={};var keys=['bookings','crownEntry','paradeEntry','castleEntry','royalEntry','totalEntry','revenue','netSales','castleAlbum','castleStorybook','paradeAlbum','paradeStorybook','crownAlbum1980','crownAlbum1438','addOnAlbum','addOnStorybook','addOnSoftcopy','print8R','print8RSecond','mainProducts','totalProducts','royalAlbum','royalStorybook','rovingAlbum','rovingSecond','freePrint168'];keys.forEach(k=>{r[k]=dataArr.reduce((s,d)=>s+(d[k]||0),0)});r.perCap=Math.round(r.revenue/Math.max(r.bookings,1));r.bookingValue=Math.round(r.netSales/Math.max(r.bookings,1));r.conv=r.mainProducts/Math.max(r.totalEntry,1);r.totalAlbumSold=r.royalAlbum+r.castleAlbum+r.paradeAlbum+r.crownAlbum1980+r.crownAlbum1438+r.addOnAlbum+r.rovingAlbum+r.rovingSecond;r.totalStorybookSold=r.royalStorybook+r.castleStorybook+r.paradeStorybook+r.addOnStorybook;r.addOn1688Eligible=r.royalAlbum+r.royalStorybook+r.castleAlbum+r.castleStorybook+r.paradeAlbum+r.paradeStorybook+r.crownAlbum1980+r.rovingAlbum+r.rovingSecond;r.addOn1688Rate=(r.addOnAlbum+r.addOnStorybook)/Math.max(r.addOn1688Eligible,1);r.addOn498Eligible=r.royalAlbum+r.castleAlbum+r.paradeAlbum+r.crownAlbum1980+r.addOnAlbum;r.addOn498Rate=r.addOnSoftcopy/Math.max(r.addOn498Eligible,1);return r}
-
 function MiniCompareBars({items,accentColor}){if(!items||items.length===0)return null;var maxVal=Math.max(...items.map(b=>Math.abs(b.value||0)),1);return(<div className="mt-1.5 space-y-1">{items.map((b,i)=>{var w=Math.max((Math.abs(b.value)/maxVal)*100,2);return(<div key={i} className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full shrink-0" style={{background:b.color}}/><span className="text-xs w-10 shrink-0 truncate" style={{color:b.color,fontWeight:700,fontSize:11}}>{b.label}</span><div className="flex-1 h-3 bg-white bg-opacity-60 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{width:w+"%",background:accentColor||b.color,opacity:i===0?1:0.4}}/></div><span className={"text-xs font-black w-16 text-right shrink-0 "+(i===0?"text-gray-700":"text-gray-400")}>{b.display}</span></div>)})}<div className="flex items-center justify-end gap-1 flex-wrap">{items.slice(1).map((b,i)=>{var pc=pctChange(items[0].value,b.value);return pc!=null?<ChangeBadge key={i} pct={pc} label={"vs"+b.label}/>:null})}</div></div>)}
 
 function MultiCompareBar({bars}){if(!bars||bars.length===0)return null;var maxVal=Math.max(...bars.map(b=>Math.abs(b.value||0)),1);return(<div className="mt-3 bg-gray-50 rounded-xl p-3 space-y-2">{bars.map((b,i)=>{var w=Math.max((Math.abs(b.value)/maxVal)*100,2);return(<div key={i} className="flex items-center gap-2"><div className="w-2 h-2 rounded-full shrink-0" style={{background:b.color}}/><span className="text-xs font-bold w-14 shrink-0 truncate" style={{color:b.color}}>{b.label}</span><div className="flex-1 h-5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{width:w+"%",background:b.color}}/></div><span className="text-xs font-black text-gray-700 w-24 text-right shrink-0">{b.display}</span></div>)})}<div className="flex items-center justify-end gap-1.5 pt-0.5 flex-wrap">{bars.slice(1).map((b,i)=>{var pc=pctChange(bars[0].value,b.value);return <ChangeBadge key={i} pct={pc} label={"vs"+b.label}/>})}</div></div>)}
@@ -306,41 +140,29 @@ function MultiCompareBar({bars}){if(!bars||bars.length===0)return null;var maxVa
 function MetricCompareRow({icon,name,periods,formatter,editable,onEdit}){var maxVal=Math.max(...periods.map(p=>Math.abs(p.value||0)),1);return(<div className="py-3.5 border-b border-gray-50 last:border-b-0"><div className="flex items-center gap-2 mb-2.5"><span className="text-base">{icon}</span><span className="text-sm font-bold text-gray-700 flex-1">{name}</span>{editable&&<button onClick={onEdit} className="text-gray-300 hover:text-rose-400 text-sm">✏️</button>}<div className="flex gap-1 flex-wrap justify-end">{periods.slice(1).map((p,i)=>{var pc=pctChange(periods[0].value,p.value);return <ChangeBadge key={i} pct={pc} label={"vs"+p.label}/>})}</div></div><div className="space-y-1.5">{periods.map((p,i)=>{var w=Math.max((Math.abs(p.value)/maxVal)*100,3);return(<div key={i} className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full shrink-0" style={{background:p.color}}/><span className="text-xs font-semibold w-14 shrink-0 truncate" style={{color:p.color}}>{p.label}</span><div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{width:w+"%",background:p.color,opacity:i===0?1:0.6}}/></div><span className={"text-xs font-black w-24 text-right shrink-0 "+(i===0?"text-gray-800":"text-gray-400")}>{formatter(p.value)}</span></div>)})}</div></div>)}
 
 function ConvRing({rate,size=52,color,strokeW=5}){var radius=(size-strokeW*2)/2;var circumference=2*Math.PI*radius;var offset=circumference*(1-Math.min(rate,1));return(<svg width={size} height={size} className="shrink-0"><circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth={strokeW}/><circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeW} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{transform:"rotate(-90deg)",transformOrigin:"center"}}/><text x={size/2} y={size/2} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill={color}>{(rate*100).toFixed(1)}%</text></svg>)}
-
 function ConvCompareBars({items,accentColor}){if(!items||items.length===0)return null;return(<div className="space-y-1">{items.map((b,i)=>{var w=Math.max(Math.min(b.value*100,100),2);return(<div key={i} className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full shrink-0" style={{background:b.color}}/><span className="text-xs w-10 shrink-0 truncate" style={{color:b.color,fontWeight:700,fontSize:11}}>{b.label}</span><div className="flex-1 h-3 bg-white bg-opacity-60 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{width:w+"%",background:accentColor||b.color,opacity:i===0?1:0.4}}/></div><span className={"text-xs font-black w-14 text-right shrink-0 "+(i===0?"text-gray-700":"text-gray-400")}>{(b.value*100).toFixed(1)}%</span></div>)})}<div className="flex items-center justify-end gap-1 flex-wrap">{items.slice(1).map((b,i)=>{var diff=((items[0].value-b.value)/Math.max(Math.abs(b.value),0.001))*100;return <ChangeBadge key={i} pct={diff} label={"vs"+b.label}/>})}</div></div>)}
 
-function StaffBizKPIs({perCap,convRate,prev,prevLabel,periodLabel}){return(<div className="space-y-3"><div className="text-xs font-bold text-gray-400 flex items-center gap-2">📊 {periodLabel||""} 營運表現{prevLabel&&<span className="text-gray-300">vs {prevLabel}</span>}</div><div className="grid grid-cols-2 gap-3"><div className="bg-white rounded-2xl p-4 shadow-sm border-2 border-emerald-100"><div className="text-xl mb-1">💵</div><div className="text-xs text-gray-400 font-semibold mb-1">Per Cap 平均值</div><div className="text-xl font-black text-emerald-600">{formatMoney(perCap)}</div>{prev&&prev.perCap>0&&<MomBadge current={perCap} previous={prev.perCap} prevLabel={formatMoney(prev.perCap)} tag={prevLabel}/>}</div><div className="bg-white rounded-2xl p-4 shadow-sm border-2 border-blue-100"><div className="text-xl mb-1">📈</div><div className="text-xs text-gray-400 font-semibold mb-1">轉化率平均值</div><div className="text-xl font-black text-blue-600">{formatPct(convRate)}</div>{prev&&prev.convRate>0&&<MomBadge current={convRate} previous={prev.convRate} isPct={true} prevLabel={formatPct(prev.convRate)} tag={prevLabel}/>}</div></div></div>)}
+function aggregateMonthData(dataArr){if(!dataArr||dataArr.length===0)return null;var r={};var keys=['bookings','crownEntry','paradeEntry','castleEntry','royalEntry','totalEntry','revenue','netSales','castleAlbum','castleStorybook','paradeAlbum','paradeStorybook','crownAlbum1980','crownAlbum1438','addOnAlbum','addOnStorybook','addOnSoftcopy','print8R','print8RSecond','mainProducts','totalProducts','royalAlbum','royalStorybook','rovingAlbum','rovingSecond','freePrint168'];keys.forEach(k=>{r[k]=dataArr.reduce((s,d)=>s+(d[k]||0),0)});r.perCap=Math.round(r.revenue/Math.max(r.bookings,1));r.bookingValue=Math.round(r.netSales/Math.max(r.bookings,1));r.conv=r.mainProducts/Math.max(r.totalEntry,1);r.totalAlbumSold=r.royalAlbum+r.castleAlbum+r.paradeAlbum+r.crownAlbum1980+r.crownAlbum1438+r.addOnAlbum+r.rovingAlbum+r.rovingSecond;r.totalStorybookSold=r.royalStorybook+r.castleStorybook+r.paradeStorybook+r.addOnStorybook;r.addOn1688Eligible=r.royalAlbum+r.royalStorybook+r.castleAlbum+r.castleStorybook+r.paradeAlbum+r.paradeStorybook+r.crownAlbum1980+r.rovingAlbum+r.rovingSecond;r.addOn1688Rate=(r.addOnAlbum+r.addOnStorybook)/Math.max(r.addOn1688Eligible,1);r.addOn498Eligible=r.royalAlbum+r.castleAlbum+r.paradeAlbum+r.crownAlbum1980+r.addOnAlbum;r.addOn498Rate=r.addOnSoftcopy/Math.max(r.addOn498Eligible,1);return r}
 
-/* ═══════════════════════════════════════
-   RankingPanel（加咗 dataSource）
-   ═══════════════════════════════════════ */
-function RankingPanel({staffList,allMonths,selYear,selMon,onClose,dataSource}){
-  var allTabs=[{key:"avg",label:"⭐ 平均評分"},{key:"perCap",label:"💵 Per Cap"},{key:"convRate",label:"📈 轉化率"}];
-  var tabs=dataSource==="real"?[allTabs[0]]:allTabs;
+/* ═══ Ranking Panel ═══ */
+function RankingPanel({staffList,allMonths,selYear,selMon,onClose}){
   var [rankBy,setRankBy]=useState("avg");
   var currentData=allMonths.find(d=>d.year===selYear&&d.month===selMon);
-  var ranked=useMemo(()=>{if(!currentData)return[];return staffList.map(name=>{var r=currentData.staffRatings[name];if(!r)return{name,avg:0,perCap:0,convRate:0};return{name,avg:r.avg,perCap:r.perCap,convRate:r.convRate}}).sort((a,b)=>{if(rankBy==="avg")return b.avg-a.avg;if(rankBy==="perCap")return b.perCap-a.perCap;return b.convRate-a.convRate})},[currentData,staffList,rankBy]);
-  var maxVal=ranked.length>0?Math.max(...ranked.map(r=>rankBy==="avg"?r.avg:rankBy==="perCap"?r.perCap:r.convRate),1):1;
+  var ranked=useMemo(()=>{if(!currentData)return[];return staffList.map(name=>{var r=currentData.staffRatings[name];if(!r)return{name,avg:0};return{name,avg:r.avg||0}}).filter(r=>r.avg>0).sort((a,b)=>b.avg-a.avg)},[currentData,staffList]);
   var medalColors=["#f59e0b","#94a3b8","#cd7f32"];
   return(
-    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-50 flex items-end justify-center" style={{background:"rgba(0,0,0,0.4)"}} onClick={onClose}>
-      <motion.div initial={{y:600}} animate={{y:0}} exit={{y:600}} onClick={e=>e.stopPropagation()} className="bg-white rounded-t-3xl w-full max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
+    <motion.div initial={{opacity:0}} animate={{opacity:1}} className="fixed inset-0 z-50 flex items-end justify-center" style={{background:"rgba(0,0,0,0.4)"}} onClick={onClose}>
+      <motion.div initial={{y:600}} animate={{y:0}} onClick={e=>e.stopPropagation()} className="bg-white rounded-t-3xl w-full max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white z-10 px-5 pt-5 pb-3 border-b border-gray-100">
           <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><Trophy className="w-5 h-5 text-amber-500"/><span className="text-lg font-black text-gray-800">同事表現排行</span></div><button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X className="w-4 h-4 text-gray-500"/></button></div>
-          <div className="text-xs text-gray-400 mb-3">{selYear}年{MONTH_NAMES[selMon]}</div>
-          <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl">{tabs.map(t=>(<button key={t.key} onClick={()=>setRankBy(t.key)} className={rankBy===t.key?"flex-1 py-2 rounded-lg text-xs font-bold bg-white text-rose-600 shadow-sm":"flex-1 py-2 rounded-lg text-xs font-bold text-gray-400"}>{t.label}</button>))}</div>
+          <div className="text-xs text-gray-400 mb-2">{selYear}年{MONTH_NAMES[selMon]}</div>
         </div>
         <div className="px-5 py-4 space-y-2.5">
-          {ranked.length===0&&<div className="py-12 text-center"><div className="text-3xl mb-2">📊</div><div className="text-sm text-gray-400">暫無評分數據</div></div>}
-          {ranked.map((r,i)=>{var val=rankBy==="avg"?r.avg:rankBy==="perCap"?r.perCap:r.convRate;var display=rankBy==="avg"?r.avg.toFixed(1):rankBy==="perCap"?formatMoney(r.perCap):formatPct(r.convRate);var barW=rankBy==="avg"?Math.max((val/5)*100,3):Math.max((val/maxVal)*100,3);var sc=rankBy==="avg"?getScoreColor(val):null;return(
+          {ranked.length===0&&<div className="py-12 text-center"><div className="text-3xl mb-2">📊</div><div className="text-sm text-gray-400">暫無評分數據</div><div className="text-xs text-gray-300 mt-1">提交 IC 評分後會自動顯示</div></div>}
+          {ranked.map((r,i)=>{var sc=getScoreColor(r.avg);var barW=Math.max((r.avg/5)*100,3);return(
             <div key={r.name} className={"flex items-center gap-3 rounded-2xl p-3.5 border-2 transition-all "+(i===0?"bg-rose-50 border-rose-200 shadow-sm":i<3?"bg-gray-50 border-gray-200":"bg-white border-gray-100")}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{background:i<3?medalColors[i]+"20":"#f3f4f6"}}>{i<3?<span className="text-base">{["🥇","🥈","🥉"][i]}</span>:<span className="text-xs font-black text-gray-400">{i+1}</span>}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1.5"><span className={"text-sm font-bold "+(i===0?"text-rose-700":"text-gray-700")}>{r.name}</span><div className="flex items-center gap-1.5"><span className={"text-base font-black "+(i===0?"text-rose-600":"text-gray-700")}>{display}</span>{sc&&<span className={"text-xs font-bold px-1.5 py-0.5 rounded-full "+sc.bg+" "+sc.text}>{sc.label}</span>}</div></div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden"><motion.div initial={{width:0}} animate={{width:barW+"%"}} className="h-full rounded-full" style={{background:i===0?"#f43f5e":i===1?"#fb7185":i===2?"#fda4af":"#e5e7eb"}}/></div>
-                {dataSource!=="real"&&<div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400"><span>⭐ {r.avg}</span><span>💵 {formatMoney(r.perCap)}</span><span>📈 {formatPct(r.convRate)}</span></div>}
-                {dataSource==="real"&&<div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400"><span>⭐ 平均 {r.avg}</span></div>}
-              </div>
+              <div className="flex-1 min-w-0"><div className="flex items-center justify-between mb-1.5"><span className={"text-sm font-bold "+(i===0?"text-rose-700":"text-gray-700")}>{r.name}</span><div className="flex items-center gap-1.5"><span className={"text-base font-black "+(i===0?"text-rose-600":"text-gray-700")}>{r.avg}</span><span className={"text-xs font-bold px-1.5 py-0.5 rounded-full "+sc.bg+" "+sc.text}>{sc.label}</span></div></div><div className="h-2.5 bg-gray-100 rounded-full overflow-hidden"><motion.div initial={{width:0}} animate={{width:barW+"%"}} className="h-full rounded-full" style={{background:i===0?"#f43f5e":i===1?"#fb7185":i===2?"#fda4af":"#e5e7eb"}}/></div></div>
             </div>
           )})}
         </div>
@@ -349,46 +171,22 @@ function RankingPanel({staffList,allMonths,selYear,selMon,onClose,dataSource}){
   );
 }
 
-/* ═══════════════════════════════════════
-   ICNotesSection（支援真實備註 + 空白狀態）
-   ═══════════════════════════════════════ */
-function ICNotesSection({staffName,staffList,selYear,selMon,period,dataSource,realNotes}){
-  /* 真實數據 → 用 realNotes；無就顯示空白 */
-  if(dataSource==="real"){
-    var notes=realNotes||[];
-    if(notes.length===0)return(
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-slate-600"/></div><div><div className="text-sm font-black text-gray-700">📝 IC 備註</div><div className="text-xs text-gray-400">不記名 · 僅記錄年/月</div></div></div></div>
-        <div className="p-8 text-center"><div className="text-3xl mb-2">📝</div><div className="text-sm text-gray-400">暫無備註記錄</div></div>
-      </div>
-    );
-    /* 有真實備註 → group by 年月顯示 */
-    var grouped={};notes.forEach(n=>{var key=n.year+"-"+n.month;if(!grouped[key])grouped[key]={year:n.year,month:n.month,notes:[]};grouped[key].notes.push(n.note)});
-    var groups=Object.values(grouped).sort((a,b)=>b.year*100+b.month-a.year*100-a.month);
-    return(
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-slate-600"/></div><div><div className="text-sm font-black text-gray-700">📝 IC 備註</div><div className="text-xs text-gray-400">不記名 · 僅記錄年/月</div></div></div></div>
-        <div className="p-4 space-y-4">{groups.map((g,gi)=>(<div key={gi}><div className="flex items-center gap-2 mb-2.5"><div className="w-2 h-2 rounded-full bg-rose-400 shrink-0"/><span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">{g.year}年{MONTH_NAMES[g.month]}</span><div className="flex-1 h-px bg-gray-100"/></div><div className="space-y-2 pl-4">{g.notes.map((note,ni)=>(<div key={ni} className="flex gap-2.5"><div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"><span className="text-xs text-gray-400">IC</span></div><div className="flex-1 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100"><p className="text-sm text-gray-600 leading-relaxed">{note}</p></div></div>))}</div></div>))}</div>
-      </div>
-    );
-  }
-
-  /* Sample 數據 fallback */
-  var notesData=useMemo(()=>{var result=[];if(period==="year"){var maxM=selYear===2026?9:12;for(var m=maxM;m>=1;m--){var ns=getStaffNotes(staffName,staffList,selYear,m);ns.forEach(n=>result.push({year:selYear,month:m,note:n}))}}else{var ns2=getStaffNotes(staffName,staffList,selYear,selMon);ns2.forEach(n=>result.push({year:selYear,month:selMon,note:n}));if(selMon>1){var pn=getStaffNotes(staffName,staffList,selYear,selMon-1);pn.forEach(n=>result.push({year:selYear,month:selMon-1,note:n}))}if(selMon>2){var p2n=getStaffNotes(staffName,staffList,selYear,selMon-2);p2n.forEach(n=>result.push({year:selYear,month:selMon-2,note:n}))}}return result},[staffName,staffList,selYear,selMon,period]);
-  if(notesData.length===0)return null;
-  var grouped2={};notesData.forEach(n=>{var key=n.year+"-"+n.month;if(!grouped2[key])grouped2[key]={year:n.year,month:n.month,notes:[]};grouped2[key].notes.push(n.note)});
-  var groups2=Object.values(grouped2).sort((a,b)=>b.year*100+b.month-a.year*100-a.month);
+/* ═══ IC Notes Section ═══ */
+function ICNotesSection({staffName,selYear,selMon,realNotes}){
+  var notes=realNotes||[];
+  var emptyUI=(<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-slate-600"/></div><div><div className="text-sm font-black text-gray-700">📝 IC 備註</div><div className="text-xs text-gray-400">不記名 · 僅記錄年/月</div></div></div></div><div className="p-8 text-center"><div className="text-3xl mb-2">📝</div><div className="text-sm text-gray-400">暫無備註記錄</div></div></div>);
+  if(notes.length===0)return emptyUI;
+  var grouped={};notes.forEach(n=>{var key=n.year+"-"+n.month;if(!grouped[key])grouped[key]={year:n.year,month:n.month,notes:[]};grouped[key].notes.push(n.note)});
+  var groups=Object.values(grouped).sort((a,b)=>b.year*100+b.month-a.year*100-a.month);
   return(
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-slate-600"/></div><div><div className="text-sm font-black text-gray-700">📝 IC 備註</div><div className="text-xs text-gray-400">不記名 · 僅記錄年/月</div></div></div></div>
-      <div className="p-4 space-y-4">{groups2.map((g,gi)=>(<div key={gi}><div className="flex items-center gap-2 mb-2.5"><div className="w-2 h-2 rounded-full bg-rose-400 shrink-0"/><span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">{g.year}年{MONTH_NAMES[g.month]}</span><div className="flex-1 h-px bg-gray-100"/></div><div className="space-y-2 pl-4">{g.notes.map((note,ni)=>(<div key={ni} className="flex gap-2.5"><div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"><span className="text-xs text-gray-400">IC</span></div><div className="flex-1 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100"><p className="text-sm text-gray-600 leading-relaxed">{note}</p></div></div>))}</div></div>))}</div>
+      <div className="p-4 space-y-4">{groups.map((g,gi)=>(<div key={gi}><div className="flex items-center gap-2 mb-2.5"><div className="w-2 h-2 rounded-full bg-rose-400 shrink-0"/><span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">{g.year}年{MONTH_NAMES[g.month]}</span><div className="flex-1 h-px bg-gray-100"/></div><div className="space-y-2 pl-4">{g.notes.map((note,ni)=>(<div key={ni} className="flex gap-2.5"><div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"><span className="text-xs text-gray-400">IC</span></div><div className="flex-1 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100"><p className="text-sm text-gray-600 leading-relaxed">{note}</p></div></div>))}</div></div>))}</div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════
-   Package detail cards（同原版一樣）
-   ═══════════════════════════════════════ */
+/* ═══ Package Detail Cards ═══ */
 function PkgAlbumDetail({pkgName,theme,albumVal,albumPrevQ,albumYoY,storybookVal,storybookPrevQ,storybookYoY,entryVal,entryPrevQ,entryYoY,dd,hasSB,crownExtra,isRoyal}){
   var totalSold=albumVal+(hasSB?storybookVal:0);var albumConv=entryVal>0?albumVal/entryVal:0;var sbConv=entryVal>0&&hasSB?storybookVal/entryVal:0;var combinedConv=entryVal>0?totalSold/entryVal:0;
   var albumConvPrevQ=entryPrevQ>0&&albumPrevQ!=null?albumPrevQ/entryPrevQ:null;var sbConvPrevQ=entryPrevQ>0&&storybookPrevQ!=null&&hasSB?storybookPrevQ/entryPrevQ:null;var combinedConvPrevQ=entryPrevQ>0&&albumPrevQ!=null?((albumPrevQ+(hasSB&&storybookPrevQ!=null?storybookPrevQ:0))/entryPrevQ):null;
@@ -396,20 +194,20 @@ function PkgAlbumDetail({pkgName,theme,albumVal,albumPrevQ,albumYoY,storybookVal
   function makeMiniBars2(curVal,prevQVal,yoyVal){var items=[{label:dd.periodWord,value:curVal,display:curVal+" 本",color:CUR_COLOR}];if(dd.prevQ&&prevQVal!=null)items.push({label:dd.prevQWord,value:prevQVal,display:prevQVal+" 本",color:PREVQ_COLOR});if(dd.yoy&&yoyVal!=null)items.push({label:dd.yoyWord,value:yoyVal,display:yoyVal+" 本",color:YOY_COLOR});return items}
   function makeConvBars(curRate,prevQRate,yoyRate){var items=[{label:dd.periodWord,value:curRate,color:CUR_COLOR}];if(dd.prevQ&&prevQRate!=null)items.push({label:dd.prevQWord,value:prevQRate,color:PREVQ_COLOR});if(dd.yoy&&yoyRate!=null)items.push({label:dd.yoyWord,value:yoyRate,color:YOY_COLOR});return items}
   return(
-    <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden">
+    <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} className="overflow-hidden">
       <div className={theme.bg+" px-4 py-4 space-y-3 border-t "+theme.border}>
-        {isRoyal&&(<div className="bg-white bg-opacity-80 rounded-xl p-3 border border-rose-100 flex items-center gap-2.5"><span className="text-xl">👸</span><div><div className="text-xs font-bold text-rose-600">Royal Package 自動包含</div><div className="text-xs text-gray-500 leading-relaxed mt-0.5">每位 Booking 自動獲得一本 Album 或 Storybook</div></div></div>)}
-        {!isRoyal&&(<div className="bg-white bg-opacity-90 rounded-xl p-3.5 border-2 border-dashed" style={{borderColor:theme.accent+"60"}}><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📊</span><span className="text-sm font-black text-gray-700">轉化率</span></div></div><div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-3 mb-2.5 border border-gray-100"><div className="flex items-center gap-3 mb-2"><ConvRing rate={combinedConv} color={theme.accent} size={52}/><div className="flex-1"><div className="text-xs font-bold text-gray-500">合計（Album{hasSB?" + Storybook":""}）</div><div className="text-lg font-black" style={{color:theme.accent}}>{(combinedConv*100).toFixed(1)}%</div><div className="text-xs text-gray-400">{totalSold} / {entryVal} 組 Bookings</div></div></div><ConvCompareBars items={makeConvBars(combinedConv,combinedConvPrevQ,combinedConvYoY)} accentColor={theme.accent}/></div><div className="flex gap-2.5"><div className="flex-1 bg-white rounded-lg p-2.5 border border-gray-100"><div className="flex items-center gap-1.5 mb-1.5"><span className="text-sm">📕</span><span className="text-xs font-bold text-gray-600">Album 轉化率</span></div><div className="text-base font-black mb-1" style={{color:theme.accent}}>{(albumConv*100).toFixed(1)}%</div><ConvCompareBars items={makeConvBars(albumConv,albumConvPrevQ,albumConvYoY)} accentColor={theme.accent}/></div>{hasSB?(<div className="flex-1 bg-white rounded-lg p-2.5 border border-gray-100"><div className="flex items-center gap-1.5 mb-1.5"><span className="text-sm">📗</span><span className="text-xs font-bold text-gray-600">Storybook 轉化率</span></div><div className="text-base font-black mb-1" style={{color:theme.accent}}>{(sbConv*100).toFixed(1)}%</div><ConvCompareBars items={makeConvBars(sbConv,sbConvPrevQ,sbConvYoY)} accentColor={theme.accent}/></div>):(<div className="flex-1 bg-white bg-opacity-40 rounded-lg p-2.5 border border-dashed border-gray-200 flex items-center justify-center"><span className="text-xs text-gray-300 italic">無 Storybook</span></div>)}</div></div>)}
+        {isRoyal&&<div className="bg-white bg-opacity-80 rounded-xl p-3 border border-rose-100 flex items-center gap-2.5"><span className="text-xl">👸</span><div><div className="text-xs font-bold text-rose-600">Royal Package 自動包含</div><div className="text-xs text-gray-500 leading-relaxed mt-0.5">每位 Booking 自動獲得一本 Album 或 Storybook</div></div></div>}
+        {!isRoyal&&<div className="bg-white bg-opacity-90 rounded-xl p-3.5 border-2 border-dashed" style={{borderColor:theme.accent+"60"}}><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📊</span><span className="text-sm font-black text-gray-700">轉化率</span></div></div><div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-3 mb-2.5 border border-gray-100"><div className="flex items-center gap-3 mb-2"><ConvRing rate={combinedConv} color={theme.accent} size={52}/><div className="flex-1"><div className="text-xs font-bold text-gray-500">合計（Album{hasSB?" + Storybook":""}）</div><div className="text-lg font-black" style={{color:theme.accent}}>{(combinedConv*100).toFixed(1)}%</div><div className="text-xs text-gray-400">{totalSold} / {entryVal} 組</div></div></div><ConvCompareBars items={makeConvBars(combinedConv,combinedConvPrevQ,combinedConvYoY)} accentColor={theme.accent}/></div><div className="flex gap-2.5"><div className="flex-1 bg-white rounded-lg p-2.5 border border-gray-100"><div className="flex items-center gap-1.5 mb-1.5"><span className="text-sm">📕</span><span className="text-xs font-bold text-gray-600">Album</span></div><div className="text-base font-black mb-1" style={{color:theme.accent}}>{(albumConv*100).toFixed(1)}%</div><ConvCompareBars items={makeConvBars(albumConv,albumConvPrevQ,albumConvYoY)} accentColor={theme.accent}/></div>{hasSB?<div className="flex-1 bg-white rounded-lg p-2.5 border border-gray-100"><div className="flex items-center gap-1.5 mb-1.5"><span className="text-sm">📗</span><span className="text-xs font-bold text-gray-600">Storybook</span></div><div className="text-base font-black mb-1" style={{color:theme.accent}}>{(sbConv*100).toFixed(1)}%</div><ConvCompareBars items={makeConvBars(sbConv,sbConvPrevQ,sbConvYoY)} accentColor={theme.accent}/></div>:<div className="flex-1 bg-white bg-opacity-40 rounded-lg p-2.5 border border-dashed border-gray-200 flex items-center justify-center"><span className="text-xs text-gray-300 italic">無 Storybook</span></div>}</div></div>}
         <div className="flex items-center justify-between"><div className="text-xs font-bold text-gray-500">📕📗 出售明細</div><div className={"text-sm font-black "+theme.text}>{totalSold} 本</div></div>
-        <div className="bg-white bg-opacity-80 rounded-xl p-3.5 border" style={{borderColor:theme.accent+"40"}}><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📕</span><span className="text-sm font-bold text-gray-700">Album</span></div><span className="text-lg font-black" style={{color:theme.accent}}>{albumVal} 本</span></div><MiniCompareBars items={makeMiniBars2(albumVal,albumPrevQ,albumYoY)} accentColor={theme.accent}/>{crownExtra&&(<div className="mt-3 pt-3 border-t border-dashed" style={{borderColor:theme.accent+"30"}}><div className="text-xs font-bold text-gray-500 mb-2">👑 Crown Album 細分</div><div className="grid grid-cols-2 gap-2"><div className="bg-amber-50 bg-opacity-70 rounded-lg p-2.5"><div className="text-xs font-semibold text-gray-500 mb-0.5">$1,980</div><div className="text-base font-black text-amber-600">{crownExtra.a1980} 本</div><MiniCompareBars items={makeMiniBars2(crownExtra.a1980,crownExtra.a1980PrevQ,crownExtra.a1980YoY)} accentColor="#f59e0b"/></div><div className="bg-yellow-50 bg-opacity-70 rounded-lg p-2.5"><div className="text-xs font-semibold text-gray-500 mb-0.5">$1,438</div><div className="text-base font-black text-yellow-600">{crownExtra.a1438} 本</div><MiniCompareBars items={makeMiniBars2(crownExtra.a1438,crownExtra.a1438PrevQ,crownExtra.a1438YoY)} accentColor="#eab308"/></div></div></div>)}</div>
-        {hasSB?(<div className="bg-white bg-opacity-80 rounded-xl p-3.5 border" style={{borderColor:theme.accent+"40"}}><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📗</span><span className="text-sm font-bold text-gray-700">Storybook</span></div><span className="text-lg font-black" style={{color:theme.accent}}>{storybookVal} 本</span></div><MiniCompareBars items={makeMiniBars2(storybookVal,storybookPrevQ,storybookYoY)} accentColor={theme.accent}/></div>):(<div className="bg-white bg-opacity-40 rounded-xl p-3 border border-dashed border-gray-200 text-center"><span className="text-xs text-gray-300 italic">此 Package 無 Storybook 選項</span></div>)}
-        {hasSB&&totalSold>0&&(<div className="bg-white bg-opacity-60 rounded-xl p-3"><div className="text-xs font-bold text-gray-400 mb-1.5">Album vs Storybook</div><div className="h-4 rounded-full overflow-hidden flex" style={{background:theme.accent+"15"}}><div className="h-full flex items-center justify-center text-white font-bold rounded-l-full" style={{width:(albumVal/totalSold*100)+"%",background:theme.accent,fontSize:10}}>{(albumVal/totalSold*100).toFixed(0)}%</div><div className="h-full flex items-center justify-center font-bold rounded-r-full" style={{width:(storybookVal/totalSold*100)+"%",background:theme.accent+"50",color:theme.accent,fontSize:10}}>{(storybookVal/totalSold*100).toFixed(0)}%</div></div><div className="flex justify-between mt-1 text-xs text-gray-400"><span>📕 {albumVal}</span><span>📗 {storybookVal}</span></div></div>)}
+        <div className="bg-white bg-opacity-80 rounded-xl p-3.5 border" style={{borderColor:theme.accent+"40"}}><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📕</span><span className="text-sm font-bold text-gray-700">Album</span></div><span className="text-lg font-black" style={{color:theme.accent}}>{albumVal} 本</span></div><MiniCompareBars items={makeMiniBars2(albumVal,albumPrevQ,albumYoY)} accentColor={theme.accent}/>{crownExtra&&<div className="mt-3 pt-3 border-t border-dashed" style={{borderColor:theme.accent+"30"}}><div className="text-xs font-bold text-gray-500 mb-2">👑 Crown Album 細分</div><div className="grid grid-cols-2 gap-2"><div className="bg-amber-50 bg-opacity-70 rounded-lg p-2.5"><div className="text-xs font-semibold text-gray-500 mb-0.5">$1,980</div><div className="text-base font-black text-amber-600">{crownExtra.a1980} 本</div><MiniCompareBars items={makeMiniBars2(crownExtra.a1980,crownExtra.a1980PrevQ,crownExtra.a1980YoY)} accentColor="#f59e0b"/></div><div className="bg-yellow-50 bg-opacity-70 rounded-lg p-2.5"><div className="text-xs font-semibold text-gray-500 mb-0.5">$1,438</div><div className="text-base font-black text-yellow-600">{crownExtra.a1438} 本</div><MiniCompareBars items={makeMiniBars2(crownExtra.a1438,crownExtra.a1438PrevQ,crownExtra.a1438YoY)} accentColor="#eab308"/></div></div></div>}</div>
+        {hasSB?<div className="bg-white bg-opacity-80 rounded-xl p-3.5 border" style={{borderColor:theme.accent+"40"}}><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📗</span><span className="text-sm font-bold text-gray-700">Storybook</span></div><span className="text-lg font-black" style={{color:theme.accent}}>{storybookVal} 本</span></div><MiniCompareBars items={makeMiniBars2(storybookVal,storybookPrevQ,storybookYoY)} accentColor={theme.accent}/></div>:<div className="bg-white bg-opacity-40 rounded-xl p-3 border border-dashed border-gray-200 text-center"><span className="text-xs text-gray-300 italic">此 Package 無 Storybook 選項</span></div>}
+        {hasSB&&totalSold>0&&<div className="bg-white bg-opacity-60 rounded-xl p-3"><div className="text-xs font-bold text-gray-400 mb-1.5">Album vs Storybook</div><div className="h-4 rounded-full overflow-hidden flex" style={{background:theme.accent+"15"}}><div className="h-full flex items-center justify-center text-white font-bold rounded-l-full" style={{width:(albumVal/totalSold*100)+"%",background:theme.accent,fontSize:10}}>{(albumVal/totalSold*100).toFixed(0)}%</div><div className="h-full flex items-center justify-center font-bold rounded-r-full" style={{width:(storybookVal/totalSold*100)+"%",background:theme.accent+"50",color:theme.accent,fontSize:10}}>{(storybookVal/totalSold*100).toFixed(0)}%</div></div><div className="flex justify-between mt-1 text-xs text-gray-400"><span>📕 {albumVal}</span><span>📗 {storybookVal}</span></div></div>}
       </div>
     </motion.div>
   );
 }
 
-function RovingInlineDetail({theme,rovingAlbum,rovingAlbumPrevQ,rovingAlbumYoY,rovingSecond,rovingSecondPrevQ,rovingSecondYoY,dd}){var totalSold=rovingAlbum+rovingSecond;function makeMiniBars2(curVal,prevQVal,yoyVal){var items=[{label:dd.periodWord,value:curVal,display:curVal+" 本",color:CUR_COLOR}];if(dd.prevQ&&prevQVal!=null)items.push({label:dd.prevQWord,value:prevQVal,display:prevQVal+" 本",color:PREVQ_COLOR});if(dd.yoy&&yoyVal!=null)items.push({label:dd.yoyWord,value:yoyVal,display:yoyVal+" 本",color:YOY_COLOR});return items}return(<div className="rounded-2xl overflow-hidden border-2 border-orange-200 shadow-sm"><div className="bg-gradient-to-r from-orange-100 to-amber-50 px-4 py-3 flex items-center justify-between"><div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg bg-orange-200">🎠</div><div className="text-base font-black text-orange-700">Roving BBB</div></div><div className="text-xl font-black text-orange-700">{totalSold} 本</div></div><div className="bg-orange-50 p-4 space-y-3"><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-orange-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📕</span><span className="text-sm font-bold text-gray-700">Roving BBB Album</span><span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">$1,688</span></div><span className="text-lg font-black text-orange-600">{rovingAlbum} 本</span></div><MiniCompareBars items={makeMiniBars2(rovingAlbum,rovingAlbumPrevQ,rovingAlbumYoY)} accentColor="#ea580c"/></div><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-orange-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📙</span><span className="text-sm font-bold text-gray-700">Second Album</span><span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">$1,299</span></div><span className="text-lg font-black text-orange-600">{rovingSecond} 本</span></div><MiniCompareBars items={makeMiniBars2(rovingSecond,rovingSecondPrevQ,rovingSecondYoY)} accentColor="#ea580c"/></div></div></div>)}
+function RovingInlineDetail({theme,rovingAlbum,rovingAlbumPrevQ,rovingAlbumYoY,rovingSecond,rovingSecondPrevQ,rovingSecondYoY,dd}){var totalSold=rovingAlbum+rovingSecond;function makeMiniBars2(curVal,prevQVal,yoyVal){var items=[{label:dd.periodWord,value:curVal,display:curVal+" 本",color:CUR_COLOR}];if(dd.prevQ&&prevQVal!=null)items.push({label:dd.prevQWord,value:prevQVal,display:prevQVal+" 本",color:PREVQ_COLOR});if(dd.yoy&&yoyVal!=null)items.push({label:dd.yoyWord,value:yoyVal,display:yoyVal+" 本",color:YOY_COLOR});return items}return(<div className="rounded-2xl overflow-hidden border-2 border-orange-200 shadow-sm"><div className="bg-gradient-to-r from-orange-100 to-amber-50 px-4 py-3 flex items-center justify-between"><div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg bg-orange-200">🎠</div><div className="text-base font-black text-orange-700">Roving BBB</div></div><div className="text-xl font-black text-orange-700">{totalSold} 本</div></div><div className="bg-orange-50 p-4 space-y-3"><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-orange-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📕</span><span className="text-sm font-bold text-gray-700">Roving BBB Album $1,688</span></div><span className="text-lg font-black text-orange-600">{rovingAlbum} 本</span></div><MiniCompareBars items={makeMiniBars2(rovingAlbum,rovingAlbumPrevQ,rovingAlbumYoY)} accentColor="#ea580c"/></div><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-orange-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📙</span><span className="text-sm font-bold text-gray-700">Second Album $1,299</span></div><span className="text-lg font-black text-orange-600">{rovingSecond} 本</span></div><MiniCompareBars items={makeMiniBars2(rovingSecond,rovingSecondPrevQ,rovingSecondYoY)} accentColor="#ea580c"/></div></div></div>)}
 
 function AddOn1688ZoneCard({cur,prevQ,yoy,dd}){function makeRateBars(){var items=[{label:dd.periodWord,value:cur.addOn1688Rate,display:formatPct(cur.addOn1688Rate),color:CUR_COLOR}];if(prevQ)items.push({label:dd.prevQWord,value:prevQ.addOn1688Rate,display:formatPct(prevQ.addOn1688Rate),color:PREVQ_COLOR});if(yoy)items.push({label:dd.yoyWord,value:yoy.addOn1688Rate,display:formatPct(yoy.addOn1688Rate),color:YOY_COLOR});return items}function makeMiniBars2(curVal,prevQVal,yoyVal){var items=[{label:dd.periodWord,value:curVal,display:curVal+" 本",color:CUR_COLOR}];if(prevQ&&prevQVal!=null)items.push({label:dd.prevQWord,value:prevQVal,display:prevQVal+" 本",color:PREVQ_COLOR});if(yoy&&yoyVal!=null)items.push({label:dd.yoyWord,value:yoyVal,display:yoyVal+" 本",color:YOY_COLOR});return items}return(<div className="rounded-2xl overflow-hidden border-2 border-teal-200 shadow-sm"><div className="bg-gradient-to-r from-teal-100 to-emerald-50 px-4 py-3 flex items-center justify-between"><div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg bg-teal-200">📦</div><div className="text-base font-black text-teal-700">Add-on $1,688</div></div><div className="text-xl font-black text-teal-700">{formatPct(cur.addOn1688Rate)}</div></div><div className="bg-teal-50 p-4 space-y-3"><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-teal-100"><div className="flex items-center gap-2 mb-2"><span className="text-base">📊</span><span className="text-sm font-bold text-gray-700">轉化率對比</span></div><MiniCompareBars items={makeRateBars()} accentColor="#14b8a6"/></div><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-teal-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📕</span><span className="text-sm font-bold text-gray-700">Album</span></div><span className="text-lg font-black text-teal-600">{cur.addOnAlbum} 本</span></div><MiniCompareBars items={makeMiniBars2(cur.addOnAlbum,prevQ?prevQ.addOnAlbum:null,yoy?yoy.addOnAlbum:null)} accentColor="#14b8a6"/></div><div className="bg-white bg-opacity-80 rounded-xl p-3.5 border border-teal-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📗</span><span className="text-sm font-bold text-gray-700">Storybook</span></div><span className="text-lg font-black text-teal-600">{cur.addOnStorybook} 本</span></div><MiniCompareBars items={makeMiniBars2(cur.addOnStorybook,prevQ?prevQ.addOnStorybook:null,yoy?yoy.addOnStorybook:null)} accentColor="#14b8a6"/></div></div></div>)}
 
@@ -417,70 +215,25 @@ function AddOn498ZoneCard({cur,prevQ,yoy,dd}){function makeRateBars(){var items=
 
 function DetailCard({icon,label,value,accent,bars}){return(<div className={"bg-white rounded-2xl shadow-sm border-2 "+(accent||"border-gray-100")+" overflow-hidden"}><div className="p-4"><div className="flex items-start justify-between mb-1"><div className="flex items-center gap-2"><span className="text-xl">{icon}</span><span className="text-sm font-bold text-gray-500">{label}</span></div></div><div className="text-2xl font-black text-gray-800">{value}</div>{bars&&bars.length>1&&<MultiCompareBar bars={bars}/>}</div></div>)}
 
-/* ═══════════════════════════════════════
-   ICPerformanceRanking（加咗 dataSource）
-   ═══════════════════════════════════════ */
-function ICPerformanceRanking({icList,allMonths,dataSource}){
-  /* 真實數據 → 顯示空白（暫無 IC 個人營運數據） */
-  if(dataSource==="real"){
-    return(<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-200"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-violet-200 flex items-center justify-center"><Shield className="w-4 h-4 text-violet-600"/></div><div><div className="text-sm font-black text-violet-700">🏆 IC 表現排名</div><div className="text-xs text-violet-400">僅你可見</div></div></div></div><div className="p-8 text-center"><div className="text-3xl mb-2">🏆</div><div className="text-sm text-gray-400">暫無 IC 表現數據</div><div className="text-xs text-gray-300 mt-1">日後接入後會自動顯示</div></div></div>);
-  }
-
-  /* Sample fallback */
-  var [icPeriod,setICPeriod]=useState("month");var [rankBy,setRankBy]=useState("convRate");var [icYear,setICYear]=useState(2026);var [icMon,setICMon]=useState(9);
-  var availableYears=useMemo(()=>{var s={};allMonths.forEach(d=>{s[d.year]=true});return Object.keys(s).map(Number).sort((a,b)=>b-a)},[allMonths]);
-  var monthsForICYear=useMemo(()=>allMonths.filter(d=>d.year===icYear).map(d=>d.month).sort((a,b)=>a-b),[allMonths,icYear]);
-  function handleICYearChange(ny){setICYear(ny);var av=allMonths.filter(d=>d.year===ny).map(d=>d.month);if(av.indexOf(icMon)===-1)setICMon(av[av.length-1]||1)}
-  var icData=useMemo(()=>{if(icPeriod==="month")return generateICBizData(icList,icYear,icMon);return generateICYearData(icList,icYear)},[icList,icYear,icMon,icPeriod]);
-  var prevICData=useMemo(()=>{if(icPeriod==="month"){var pm=icMon===1?12:icMon-1;var py=icMon===1?icYear-1:icYear;return generateICBizData(icList,py,pm)}return generateICYearData(icList,icYear-1)},[icList,icYear,icMon,icPeriod]);
-  var ranked=useMemo(()=>[...icData].sort((a,b)=>{if(rankBy==="convRate")return b.convRate-a.convRate;if(rankBy==="revenue")return b.revenue-a.revenue;return b.perCap-a.perCap}),[icData,rankBy]);
-  var medalColors=["#f59e0b","#94a3b8","#cd7f32"];
-  var periodLabel=icPeriod==="month"?icYear+"年"+MONTH_NAMES[icMon]:icYear+"年 全年";var prevLabel=icPeriod==="month"?"上月":"上年";
-  var dropdownStyle="border-2 border-violet-200 rounded-xl px-3 py-2 text-sm font-bold bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-300 appearance-none";
-  if(icList.length===0)return(<div className="bg-gray-50 rounded-2xl p-8 text-center border-2 border-dashed border-gray-200"><div className="text-3xl mb-2">👤</div><div className="text-sm text-gray-400">未有 IC 名單，請先新增</div></div>);
-  return(
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-200"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-violet-200 flex items-center justify-center"><Shield className="w-4 h-4 text-violet-600"/></div><div><div className="text-sm font-black text-violet-700">🏆 IC 表現排名</div><div className="text-xs text-violet-400">僅你可見</div></div></div></div>
-      <div className="px-4 pt-3 space-y-2.5">
-        <div className="flex items-center gap-2 flex-wrap"><div className="flex gap-1 bg-gray-100 p-1 rounded-xl shrink-0">{[{key:"month",label:"📅 月"},{key:"year",label:"📆 年"}].map(t=>(<button key={t.key} onClick={()=>setICPeriod(t.key)} className={icPeriod===t.key?"px-3 py-2 rounded-lg text-xs font-bold bg-white text-violet-600 shadow-sm":"px-3 py-2 rounded-lg text-xs font-bold text-gray-400"}>{t.label}</button>))}</div><div className="flex gap-2 items-center flex-1 justify-end"><select value={icYear} onChange={e=>handleICYearChange(parseInt(e.target.value))} className={dropdownStyle}>{availableYears.map(y=><option key={y} value={y}>{y}年</option>)}</select>{icPeriod==="month"&&(<select value={icMon} onChange={e=>setICMon(parseInt(e.target.value))} className={dropdownStyle}>{monthsForICYear.map(m=><option key={m} value={m}>{m}月</option>)}</select>)}</div></div>
-        <div className="text-xs font-bold text-violet-500 bg-violet-50 rounded-lg px-3 py-2 border border-violet-200 flex items-center gap-2">📅 {periodLabel}<span className="text-violet-300">|</span><span className="text-violet-400">對比：{prevLabel}</span></div>
-        <div className="flex gap-1.5 bg-violet-50 p-1 rounded-xl">{[{key:"convRate",label:"📈 相簿轉化率"},{key:"revenue",label:"💰 帳面數字"},{key:"perCap",label:"💵 Per Cap"}].map(t=>(<button key={t.key} onClick={()=>setRankBy(t.key)} className={rankBy===t.key?"flex-1 py-2 rounded-lg text-xs font-bold bg-white text-violet-600 shadow-sm":"flex-1 py-2 rounded-lg text-xs font-bold text-violet-300"}>{t.label}</button>))}</div>
-      </div>
-      <div className="px-4 py-4 space-y-3">
-        {ranked.map((ic,i)=>{var prevIC=prevICData.find(p=>p.name===ic.name);var mainVal=rankBy==="convRate"?ic.convRate:rankBy==="revenue"?ic.revenue:ic.perCap;var mainDisplay=rankBy==="convRate"?formatPct(ic.convRate):rankBy==="revenue"?formatMoney(ic.revenue):formatMoney(ic.perCap);var prevMainVal=prevIC?(rankBy==="convRate"?prevIC.convRate:rankBy==="revenue"?prevIC.revenue:prevIC.perCap):null;var maxConv=Math.max(...ranked.map(r=>r.convRate),0.01);var maxRev=Math.max(...ranked.map(r=>r.revenue),1);var maxPC=Math.max(...ranked.map(r=>r.perCap),1);var barW=rankBy==="convRate"?Math.max((ic.convRate/maxConv)*100,5):rankBy==="revenue"?Math.max((ic.revenue/maxRev)*100,5):Math.max((ic.perCap/maxPC)*100,5);return(
-          <div key={ic.name} className={"rounded-2xl border-2 overflow-hidden transition-all "+(i===0?"border-violet-300 shadow-md":"border-gray-200")}>
-            <div className={"px-4 py-3 "+(i===0?"bg-gradient-to-r from-violet-50 to-purple-50":"bg-gray-50")}>
-              <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{background:i<3?medalColors[i]+"20":"#f3f4f6"}}>{i<3?<span className="text-xl">{["🥇","🥈","🥉"][i]}</span>:<span className="text-sm font-black text-gray-400">{i+1}</span>}</div><div className="flex-1 min-w-0"><div className="flex items-center justify-between mb-1"><span className={"text-base font-black "+(i===0?"text-violet-700":"text-gray-700")}>{ic.name}</span><div className="flex items-center gap-1.5"><span className={"text-lg font-black "+(i===0?"text-violet-600":"text-gray-700")}>{mainDisplay}</span>{prevMainVal!=null&&prevMainVal>0&&(()=>{var pc=rankBy==="convRate"?((ic.convRate-prevIC.convRate)/Math.max(Math.abs(prevIC.convRate),0.001))*100:pctChange(mainVal,prevMainVal);return <ChangeBadge pct={pc}/>})()}</div></div><div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-2"><motion.div initial={{width:0}} animate={{width:barW+"%"}} className="h-full rounded-full" style={{background:i===0?"#7c3aed":i===1?"#a78bfa":i===2?"#c4b5fd":"#d1d5db"}}/></div></div></div>
-            </div>
-            <div className="px-4 py-3 bg-white">
-              <div className="grid grid-cols-3 gap-2"><div className={"rounded-xl p-2.5 text-center "+(rankBy==="convRate"?"bg-violet-50 border-2 border-violet-200":"bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">📈 相簿轉化率</div><div className={"text-sm font-black "+(rankBy==="convRate"?"text-violet-600":"text-gray-700")}>{formatPct(ic.convRate)}</div>{prevIC&&(<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatPct(prevIC.convRate)}</span></div>)}<div className="text-xs text-gray-300 mt-0.5">{ic.totalBookSold} / {ic.entry} 組</div></div><div className={"rounded-xl p-2.5 text-center "+(rankBy==="revenue"?"bg-violet-50 border-2 border-violet-200":"bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💰 帳面數字</div><div className={"text-sm font-black "+(rankBy==="revenue"?"text-violet-600":"text-gray-700")}>{formatMoney(ic.revenue)}</div>{prevIC&&(<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.revenue)}</span></div>)}</div><div className={"rounded-xl p-2.5 text-center "+(rankBy==="perCap"?"bg-violet-50 border-2 border-violet-200":"bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💵 Per Cap</div><div className={"text-sm font-black "+(rankBy==="perCap"?"text-violet-600":"text-gray-700")}>{formatMoney(ic.perCap)}</div>{prevIC&&(<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.perCap)}</span></div>)}</div></div>
-              <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><span>📕 Album {ic.albumSold}</span><span>📗 Storybook {ic.storybookSold}</span><span>🚪 Bookings {ic.entry}</span></div>
-            </div>
-          </div>
-        )})}
-      </div>
-    </div>
-  );
+/* ═══ IC Performance Ranking ═══ */
+function ICPerformanceRanking({icList}){
+  return(<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-200"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-violet-200 flex items-center justify-center"><Shield className="w-4 h-4 text-violet-600"/></div><div><div className="text-sm font-black text-violet-700">🏆 IC 表現排名</div><div className="text-xs text-violet-400">僅你可見</div></div></div></div><div className="p-8 text-center"><div className="text-3xl mb-2">🏆</div><div className="text-sm text-gray-400">暫無 IC 表現數據</div><div className="text-xs text-gray-300 mt-1">日後接入後會自動顯示</div></div></div>);
 }
 
-/* ═══════════════════════════════════════
-   PasswordGate
-   ═══════════════════════════════════════ */
-function PasswordGate({onUnlock}){var [pw,setPw]=useState("");var [showPw,setShowPw]=useState(false);var [error,setError]=useState(false);var [shake,setShake]=useState(false);function handleSubmit(e){e.preventDefault();if(pw===SETTINGS_PW){onUnlock()}else{setError(true);setShake(true);setTimeout(()=>setShake(false),500);setTimeout(()=>setError(false),2000)}}return(<div className="flex flex-col items-center justify-center py-16 px-6"><motion.div animate={shake?{x:0}:{}} className="w-full max-w-sm"><div className="bg-white rounded-3xl shadow-lg border-2 border-gray-200 p-8 text-center"><div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-5"><Lock className="w-7 h-7 text-gray-500"/></div><h3 className="text-lg font-black text-gray-700 mb-1">需要密碼</h3><p className="text-sm text-gray-400 mb-6">請輸入密碼以進入設定頁面</p><form onSubmit={handleSubmit}><div className="relative mb-4"><input type={showPw?"text":"password"} value={pw} onChange={e=>{setPw(e.target.value);setError(false)}} placeholder="輸入密碼..." className={"w-full border-2 rounded-xl px-4 py-3.5 pr-12 text-center text-lg font-bold tracking-widest focus:outline-none focus:ring-2 transition-all "+(error?"border-red-400 bg-red-50 focus:ring-red-300 text-red-600":"border-gray-200 bg-gray-50 focus:ring-rose-300 focus:border-rose-300")} autoFocus/><button type="button" onClick={()=>setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPw?<EyeOff className="w-5 h-5"/>:<Eye className="w-5 h-5"/>}</button></div>{error&&(<div className="text-sm text-red-500 font-bold mb-3">❌ 密碼錯誤，請重試</div>)}<button type="submit" className="w-full bg-gradient-to-r from-rose-400 to-pink-400 text-white font-bold py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all text-sm"><div className="flex items-center justify-center gap-2"><Unlock className="w-4 h-4"/><span>解鎖設定</span></div></button></form></div></motion.div></div>)}
+/* ═══ Password Gate ═══ */
+function PasswordGate({onUnlock}){var [pw,setPw]=useState("");var [showPw,setShowPw]=useState(false);var [error,setError]=useState(false);var [shake,setShake]=useState(false);function handleSubmit(e){e.preventDefault();if(pw===SETTINGS_PW){onUnlock()}else{setError(true);setShake(true);setTimeout(()=>setShake(false),500);setTimeout(()=>setError(false),2000)}}return(<div className="flex flex-col items-center justify-center py-16 px-6"><div className="w-full max-w-sm"><div className="bg-white rounded-3xl shadow-lg border-2 border-gray-200 p-8 text-center"><div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-5"><Lock className="w-7 h-7 text-gray-500"/></div><h3 className="text-lg font-black text-gray-700 mb-1">需要密碼</h3><p className="text-sm text-gray-400 mb-6">請輸入密碼以進入設定頁面</p><form onSubmit={handleSubmit}><div className="relative mb-4"><input type={showPw?"text":"password"} value={pw} onChange={e=>{setPw(e.target.value);setError(false)}} placeholder="輸入密碼..." className={"w-full border-2 rounded-xl px-4 py-3.5 pr-12 text-center text-lg font-bold tracking-widest focus:outline-none focus:ring-2 transition-all "+(error?"border-red-400 bg-red-50 focus:ring-red-300 text-red-600":"border-gray-200 bg-gray-50 focus:ring-rose-300 focus:border-rose-300")} autoFocus/><button type="button" onClick={()=>setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPw?<EyeOff className="w-5 h-5"/>:<Eye className="w-5 h-5"/>}</button></div>{error&&<div className="text-sm text-red-500 font-bold mb-3">❌ 密碼錯誤</div>}<button type="submit" className="w-full bg-gradient-to-r from-rose-400 to-pink-400 text-white font-bold py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all text-sm"><div className="flex items-center justify-center gap-2"><Unlock className="w-4 h-4"/><span>解鎖設定</span></div></button></form></div></div></div>)}
 
-/* ═══════════════════════════════════════════
-   ★ Main Dashboard Component ★
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════
+   ★ MAIN DASHBOARD ★
+   ═══════════════════════════════════ */
 function PBBBDashboard(){
   var [activeTab,setActiveTab]=useState("overview");
-  var [staffList,setStaffList]=useState(INITIAL_STAFF);
-  var [icList,setICList]=useState(INITIAL_ICS);
+  var [staffList,setStaffList]=useState([]);
+  var [icList,setICList]=useState([]);
   var [selYear,setSelYear]=useState(2026);
   var [selMon,setSelMon]=useState(9);
   var [selectedStaff,setSelectedStaff]=useState("");
   var [staffViewPeriod,setStaffViewPeriod]=useState("month");
-  var [selectedWeek,setSelectedWeek]=useState(null);
-  var [selectedDay,setSelectedDay]=useState(1);
   var [detailView,setDetailView]=useState("month");
   var [nsOverrides,setNsOverrides]=useState({});
   var [editingNS,setEditingNS]=useState(null);
@@ -490,22 +243,22 @@ function PBBBDashboard(){
   var [expandedPkgs,setExpandedPkgs]=useState({});
   var [showRanking,setShowRanking]=useState(false);
   var [settingsUnlocked,setSettingsUnlocked]=useState(false);
-
-  /* ★ 新增：API 數據 state ★ */
   var [sheetData,setSheetData]=useState(null);
   var [loading,setLoading]=useState(true);
-  var [dataSource,setDataSource]=useState("loading");
+  var [connectStatus,setConnectStatus]=useState("loading"); // "loading"|"connected"|"error"
 
   useEffect(function(){
     fetch(SHEET_API_URL)
       .then(function(res){return res.json()})
       .then(function(data){
-        if(data.status==="success"&&data.daily&&data.daily.length>0){
+        setConnectStatus("connected");
+        if(data.status==="success"){
           setSheetData(data);
-          setDataSource("real");
-          var latestDate=data.daily[data.daily.length-1].Date||"";
-          var parts=latestDate.split("-");
-          if(parts.length>=2){setSelYear(parseInt(parts[0]));setSelMon(parseInt(parts[1]))}
+          if(data.daily&&data.daily.length>0){
+            var latestDate=data.daily[data.daily.length-1].Date||"";
+            var parts=latestDate.split("-");
+            if(parts.length>=2){setSelYear(parseInt(parts[0]));setSelMon(parseInt(parts[1]))}
+          }
           if(data.ratings&&data.ratings.length>0){
             var names={};data.ratings.forEach(function(r){if(r.Staff_Name)names[r.Staff_Name]=true});
             var newList=Object.keys(names);if(newList.length>0)setStaffList(newList);
@@ -514,38 +267,53 @@ function PBBBDashboard(){
             var ics={};data.daily.forEach(function(r){if(r.IC1)ics[r.IC1]=true;if(r.IC2)ics[r.IC2]=true});
             var icNames=Object.keys(ics);if(icNames.length>0)setICList(icNames);
           }
-        }else{setDataSource("sample")}
+        }
         setLoading(false);
       })
-      .catch(function(err){console.error("Failed to fetch:",err);setDataSource("sample");setLoading(false)});
+      .catch(function(err){
+        console.error("Fetch error:",err);
+        setConnectStatus("error");
+        setLoading(false);
+      });
   },[]);
 
   function togglePkg(name){setExpandedPkgs(prev=>{var n=Object.assign({},prev);n[name]=!n[name];return n})}
 
-  /* ★ 數據來源切換 ★ */
+  /* ★ 數據：只用真實數據，無就空 ★ */
   var generatedData=useMemo(function(){
-    if(sheetData)return transformAPIData(sheetData,staffList);
-    return generateAllData(staffList);
+    if(sheetData&&sheetData.daily&&sheetData.daily.length>0){
+      return transformAPIData(sheetData,staffList);
+    }
+    return{months:[],daily:[]};
   },[sheetData,staffList]);
 
-  var allMonths=generatedData.months;var dailyData=generatedData.daily;
-  var availableYears=useMemo(()=>{var s={};allMonths.forEach(d=>{s[d.year]=true});return Object.keys(s).map(Number).sort((a,b)=>b-a)},[allMonths]);
-  var monthsForYear=useMemo(()=>allMonths.filter(d=>d.year===selYear).map(d=>d.month).sort((a,b)=>a-b),[allMonths,selYear]);
-  var sel=selectedStaff||staffList[0]||"";
+  var allMonths=generatedData.months;
+  var dailyData=generatedData.daily;
+  var hasData=allMonths.length>0;
 
-  /* ★ 真實數據時 dailyScores 返回空 ★ */
-  var dailyScores=useMemo(()=>{if(!sel||dataSource==="real")return[];return getDailyStaffScores(sel,staffList,selYear,selMon)},[sel,staffList,selYear,selMon,dataSource]);
-  var weeks=useMemo(()=>{var w=[];for(var i=0;i<5;i++){var s=i*7+1;var e=Math.min((i+1)*7,30);if(s>30)break;var wd=dailyScores.filter(d=>d.day>=s&&d.day<=e);if(wd.length===0)continue;var ws={};ALL_CRITERIA.forEach(c=>{ws[c.key]=+(wd.reduce((sum,d)=>sum+(d.scores[c.key]||0),0)/wd.length).toFixed(1)});var wEntry=wd.reduce((sum,d)=>sum+d.entry,0);var wAlbum=wd.reduce((sum,d)=>sum+d.albumSold,0);var wSB=wd.reduce((sum,d)=>sum+d.storybookSold,0);var wPerCap=Math.round(wd.reduce((sum,d)=>sum+d.perCap,0)/wd.length);var wConv=wEntry>0?(wAlbum+wSB)/wEntry:0;w.push({weekNum:i+1,startDay:s,endDay:e,scores:ws,avg:+(wd.reduce((sum,d)=>sum+d.avg,0)/wd.length).toFixed(1),days:wd,entry:wEntry,albumSold:wAlbum,storybookSold:wSB,perCap:wPerCap,convRate:wConv})}return w},[dailyScores]);
+  var availableYears=useMemo(()=>{
+    var s={};allMonths.forEach(d=>{s[d.year]=true});
+    var years=Object.keys(s).map(Number);
+    if(years.length===0)return[2026];
+    return years.sort((a,b)=>b-a);
+  },[allMonths]);
 
-  /* ★ 真實 IC 備註 ★ */
+  var monthsForYear=useMemo(()=>{
+    var ms=allMonths.filter(d=>d.year===selYear).map(d=>d.month);
+    if(ms.length===0)return[selMon];
+    return ms.sort((a,b)=>a-b);
+  },[allMonths,selYear,selMon]);
+
+  var sel=selectedStaff||(staffList.length>0?staffList[0]:"");
+
   var realNotes=useMemo(function(){
-    if(!sheetData||!sheetData.ratings||dataSource!=="real")return[];
+    if(!sheetData||!sheetData.ratings||!sel)return[];
     return sheetData.ratings.filter(function(r){return r.Staff_Name===sel&&r.notes&&r.notes.trim()}).map(function(r){
       var p=(r.Date||"").split("-");return{year:parseInt(p[0])||0,month:parseInt(p[1])||0,note:r.notes.trim()};
     });
-  },[sheetData,sel,dataSource]);
+  },[sheetData,sel]);
 
-  function handleYearChange(ny){setSelYear(ny);var av=allMonths.filter(d=>d.year===ny).map(d=>d.month);if(av.indexOf(selMon)===-1)setSelMon(av[av.length-1]||1)}
+  function handleYearChange(ny){setSelYear(ny);var av=allMonths.filter(d=>d.year===ny).map(d=>d.month);if(av.indexOf(selMon)===-1&&av.length>0)setSelMon(av[av.length-1])}
   function handleMonthChange(nm){setSelMon(nm)}
 
   function getMonthData(year,month){var found=allMonths.find(d=>d.year===year&&d.month===month);if(!found)return null;var key=year+"-"+month;var ns=nsOverrides[key]!=null?nsOverrides[key]:found.netSales;return Object.assign({},found,{netSales:ns,bookingValue:Math.round(ns/Math.max(found.bookings,1))})}
@@ -564,9 +332,11 @@ function PBBBDashboard(){
 
   function PeriodLegend({dd}){var items=[{label:dd.periodWord,color:CUR_COLOR}];if(dd.prevQ)items.push({label:dd.prevQWord+(dd.prevQDetail?"（"+dd.prevQDetail+"）":""),color:PREVQ_COLOR});if(dd.yoy)items.push({label:dd.yoyWord,color:YOY_COLOR});return(<div className="flex items-center gap-4 flex-wrap text-xs text-gray-400">{items.map((it,i)=>(<span key={i} className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-full" style={{background:it.color}}/>{it.label}</span>))}</div>)}
 
-  /* ════════════════ renderOverview ════════════════ */
+  var statusBadge=connectStatus==="connected"?(hasData?"✅ 已連接 · 有數據":"📡 已連接 · 等待數據"):connectStatus==="error"?"⚠️ 連接失敗":"⏳ 連接中...";
+
+  /* ══════ renderOverview ══════ */
   function renderOverview(){
-    if(!currentData)return <div className="p-6 text-gray-400">無數據</div>;
+    if(!currentData)return(<div className="space-y-4"><div className="flex items-center justify-between flex-wrap gap-2"><h2 className="text-lg font-black text-gray-700">📊 總覽</h2><YearMonthSelector selYear={selYear} selMon={selMon} years={availableYears} monthsForYear={monthsForYear} onYearChange={handleYearChange} onMonthChange={handleMonthChange}/></div><EmptyCard icon="📊" title="暫無數據" subtitle="Google Sheet 入咗數據後會自動顯示"/></div>);
     var totalPkgEntry=currentData.crownEntry+currentData.paradeEntry+currentData.castleEntry+currentData.royalEntry;
     var pkgItems=[{name:"Crown",icon:"👑",value:currentData.crownEntry,prevValue:prevData?prevData.crownEntry:null,color:PKG_COLORS.Crown},{name:"Parade",icon:"🎪",value:currentData.paradeEntry,prevValue:prevData?prevData.paradeEntry:null,color:PKG_COLORS.Parade},{name:"Castle",icon:"🏰",value:currentData.castleEntry,prevValue:prevData?prevData.castleEntry:null,color:PKG_COLORS.Castle},{name:"Royal",icon:"👸",value:currentData.royalEntry,prevValue:prevData?prevData.royalEntry:null,color:PKG_COLORS.Royal}];
     var pieData=pkgItems.map(p=>({name:p.name,value:p.value,color:p.color,pct:totalPkgEntry>0?((p.value/totalPkgEntry)*100).toFixed(1):"0"}));
@@ -586,24 +356,22 @@ function PBBBDashboard(){
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-1">💵 每日 Per Cap 趨勢</div>{dailyData.length>0?<ResponsiveContainer width="100%" height={220}><LineChart data={dailyData}><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6"/><XAxis dataKey="day" tick={{fontSize:10}}/><YAxis tick={{fontSize:10}} tickFormatter={v=>"$"+v.toLocaleString()} domain={[perCapChartBounds.min,perCapChartBounds.max]}/><Tooltip formatter={(v,name)=>["$"+v.toLocaleString(),name==="perCap"?"本月":"上月"]}/><Line type="monotone" dataKey="prevPerCap" stroke="#fda4af" strokeWidth={2} dot={false} strokeDasharray="6 3"/><Line type="monotone" dataKey="perCap" stroke="#f43f5e" strokeWidth={2.5} dot={{r:2,fill:"#f43f5e",strokeWidth:0}}/></LineChart></ResponsiveContainer>:<div className="py-8 text-center text-sm text-gray-400">暫無每日數據</div>}</div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3"><div className="font-bold text-sm text-gray-700">🎯 Package Bookings 分佈</div></div>
-          <div className="flex gap-4">
-            <div className="shrink-0"><ResponsiveContainer width={160} height={160}><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={28} outerRadius={55} dataKey="value" paddingAngle={2}>{pieData.map((d,i)=><Cell key={i} fill={d.color}/>)}</Pie><Tooltip content={<CustomPieTooltip/>}/></PieChart></ResponsiveContainer></div>
-            <div className="flex-1 space-y-2.5">{pkgItems.map(p=>{var pct=totalPkgEntry>0?((p.value/totalPkgEntry)*100).toFixed(1):"0";var entryPc=p.prevValue!=null&&p.prevValue>0?pctChange(p.value,p.prevValue):null;return(<div key={p.name}><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full shrink-0" style={{background:p.color}}/><div className="flex-1 min-w-0"><div className="flex justify-between items-baseline"><span className="text-sm font-bold text-gray-700">{p.icon} {p.name}</span><span className="text-sm font-black">{p.value} 組</span></div><div className="flex items-center gap-2 mt-0.5 flex-wrap"><span className="text-xs text-gray-400">{pct}%</span>{p.prevValue!=null&&<span className="text-xs text-gray-300">上月 {p.prevValue}</span>}{entryPc!=null&&<ChangeBadge pct={entryPc}/>}</div></div></div></div>)})}</div>
-          </div>
+          <div className="font-bold text-sm text-gray-700 mb-3">🎯 Package Bookings 分佈</div>
+          <div className="flex gap-4"><div className="shrink-0"><ResponsiveContainer width={160} height={160}><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={28} outerRadius={55} dataKey="value" paddingAngle={2}>{pieData.map((d,i)=><Cell key={i} fill={d.color}/>)}</Pie><Tooltip content={<CustomPieTooltip/>}/></PieChart></ResponsiveContainer></div><div className="flex-1 space-y-2.5">{pkgItems.map(p=>{var pct=totalPkgEntry>0?((p.value/totalPkgEntry)*100).toFixed(1):"0";var entryPc=p.prevValue!=null&&p.prevValue>0?pctChange(p.value,p.prevValue):null;return(<div key={p.name}><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full shrink-0" style={{background:p.color}}/><div className="flex-1 min-w-0"><div className="flex justify-between items-baseline"><span className="text-sm font-bold text-gray-700">{p.icon} {p.name}</span><span className="text-sm font-black">{p.value} 組</span></div><div className="flex items-center gap-2 mt-0.5 flex-wrap"><span className="text-xs text-gray-400">{pct}%</span>{p.prevValue!=null&&<span className="text-xs text-gray-300">上月 {p.prevValue}</span>}{entryPc!=null&&<ChangeBadge pct={entryPc}/>}</div></div></div></div>)})}</div></div>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="font-bold text-sm text-gray-700 mb-3">📊 各 Package 轉化率</div>
-          {convItems.map(c=>{var convPc=c.prevVal!=null&&c.prevVal>0?((c.val-c.prevVal)/c.prevVal)*100:null;return(<div key={c.name} className="mb-4 last:mb-0"><div className="flex justify-between items-center text-sm mb-1.5"><span className="font-semibold">{c.icon} {c.name}</span><div className="flex items-center gap-2"><span className="font-bold">{formatPct(c.val)}</span>{convPc!=null&&<ChangeBadge pct={convPc}/>}</div></div><div className="flex items-center gap-2 mb-1"><span className="text-xs text-gray-400 w-8 shrink-0">本月</span><div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:Math.min(c.val*100,100)+"%",background:c.color}}/></div><span className="text-xs font-black w-12 text-right" style={{color:c.color}}>{formatPct(c.val)}</span></div>{c.prevVal!=null&&(<div className="flex items-center gap-2"><span className="text-xs text-gray-300 w-8 shrink-0">上月</span><div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:Math.min(c.prevVal*100,100)+"%",background:c.color,opacity:0.35}}/></div><span className="text-xs font-bold w-12 text-right text-gray-400">{formatPct(c.prevVal)}</span></div>)}</div>)})}
+          {convItems.map(c=>{var convPc=c.prevVal!=null&&c.prevVal>0?((c.val-c.prevVal)/c.prevVal)*100:null;return(<div key={c.name} className="mb-4 last:mb-0"><div className="flex justify-between items-center text-sm mb-1.5"><span className="font-semibold">{c.icon} {c.name}</span><div className="flex items-center gap-2"><span className="font-bold">{formatPct(c.val)}</span>{convPc!=null&&<ChangeBadge pct={convPc}/>}</div></div><div className="flex items-center gap-2 mb-1"><span className="text-xs text-gray-400 w-8 shrink-0">本月</span><div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:Math.min(c.val*100,100)+"%",background:c.color}}/></div><span className="text-xs font-black w-12 text-right" style={{color:c.color}}>{formatPct(c.val)}</span></div>{c.prevVal!=null&&<div className="flex items-center gap-2"><span className="text-xs text-gray-300 w-8 shrink-0">上月</span><div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:Math.min(c.prevVal*100,100)+"%",background:c.color,opacity:0.35}}/></div><span className="text-xs font-bold w-12 text-right text-gray-400">{formatPct(c.prevVal)}</span></div>}</div>)})}
         </div>
       </div>
     );
   }
 
-  /* ════════════════ renderDetails ════════════════ */
+  /* ══════ renderDetails ══════ */
   function renderDetails(){
+    if(!hasData)return(<div className="space-y-4"><div className="flex items-center justify-between flex-wrap gap-2"><h2 className="text-lg font-black text-gray-700">📋 明細分析</h2><YearMonthSelector selYear={selYear} selMon={selMon} years={availableYears} monthsForYear={monthsForYear} onYearChange={handleYearChange} onMonthChange={handleMonthChange}/></div><EmptyCard icon="📋" title="暫無明細數據" subtitle="Google Sheet 入咗數據後會自動顯示"/></div>);
     var dd=getDetailData();var cur=dd.cur;var prevQ=dd.prevQ;var yoy=dd.yoy;
-    if(!cur)return <div className="p-6 text-gray-400">無數據</div>;
+    if(!cur)return <EmptyCard icon="📋" title="此期間暫無數據"/>;
     var totalPkg=cur.crownEntry+cur.paradeEntry+cur.castleEntry+cur.royalEntry;var nsKey=selYear+"-"+selMon;
     var pkgDefs=[{name:"Royal",icon:"👸",color:PKG_COLORS.Royal,entryKey:"royalEntry",albumKey:"royalAlbum",sbKey:"royalStorybook",hasSB:true,theme:PKG_THEMES.Royal,isRoyal:true},{name:"Castle",icon:"🏰",color:PKG_COLORS.Castle,entryKey:"castleEntry",albumKey:"castleAlbum",sbKey:"castleStorybook",hasSB:true,theme:PKG_THEMES.Castle,isRoyal:false},{name:"Parade",icon:"🎪",color:PKG_COLORS.Parade,entryKey:"paradeEntry",albumKey:"paradeAlbum",sbKey:"paradeStorybook",hasSB:true,theme:PKG_THEMES.Parade,isRoyal:false},{name:"Crown",icon:"👑",color:PKG_COLORS.Crown,entryKey:"crownEntry",hasSB:false,theme:PKG_THEMES.Crown,isRoyal:false}];
     var compareMetrics=[{icon:"📊",name:"Bookings",key:"bookings",formatter:v=>formatNum(v)+" 組"},{icon:"💰",name:"帳面營收",key:"revenue",formatter:formatMoney},{icon:"💵",name:"Per Cap",key:"perCap",formatter:formatMoney},{icon:"💎",name:"Net Sales",key:"netSales",formatter:formatMoney,editable:detailView==="month"},{icon:"📈",name:"Booking Value",key:"bookingValue",formatter:formatMoney},{icon:"📕",name:"Album 總數",key:"totalAlbumSold",formatter:v=>(v||0)+" 本"},{icon:"📗",name:"Storybook 總數",key:"totalStorybookSold",formatter:v=>(v||0)+" 本"}];
@@ -616,15 +384,12 @@ function PBBBDashboard(){
         <div className="text-sm font-bold text-gray-500 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl px-4 py-2.5 border border-rose-200">📅 {dd.periodLabel}</div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="font-bold text-sm text-gray-700 mb-2">📍 指標對比</div><PeriodLegend dd={dd}/>
-          {editingNS===nsKey&&(<div className="mt-2 flex gap-2 items-center bg-rose-50 rounded-xl px-3 py-2 border border-rose-200"><span className="text-xs font-bold text-gray-500">Net Sales:</span><input value={nsInput} onChange={e=>setNsInput(e.target.value)} className="flex-1 border-2 border-rose-200 rounded-lg px-2 py-1 text-sm bg-white" type="number" autoFocus/><button onClick={()=>{var o=Object.assign({},nsOverrides);o[nsKey]=parseInt(nsInput)||0;setNsOverrides(o);setEditingNS(null)}} className="text-emerald-500 font-bold text-lg">✓</button><button onClick={()=>setEditingNS(null)} className="text-gray-400 text-lg">✕</button></div>)}
+          {editingNS===nsKey&&<div className="mt-2 flex gap-2 items-center bg-rose-50 rounded-xl px-3 py-2 border border-rose-200"><span className="text-xs font-bold text-gray-500">Net Sales:</span><input value={nsInput} onChange={e=>setNsInput(e.target.value)} className="flex-1 border-2 border-rose-200 rounded-lg px-2 py-1 text-sm bg-white" type="number" autoFocus/><button onClick={()=>{var o=Object.assign({},nsOverrides);o[nsKey]=parseInt(nsInput)||0;setNsOverrides(o);setEditingNS(null)}} className="text-emerald-500 font-bold text-lg">✓</button><button onClick={()=>setEditingNS(null)} className="text-gray-400 text-lg">✕</button></div>}
           <div className="mt-2 divide-y divide-gray-50">{compareMetrics.map(metric=>(<MetricCompareRow key={metric.key} icon={metric.icon} name={metric.name} periods={makePeriodsFor(metric.key)} formatter={metric.formatter} editable={metric.editable&&editingNS!==nsKey} onEdit={metric.editable?()=>{setEditingNS(nsKey);setNsInput(String(cur.netSales))}:undefined}/>))}</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border-2 border-rose-200 overflow-hidden">
           <div className="p-4"><div className="flex items-center gap-2 mb-1"><span className="text-xl">📊</span><span className="text-sm font-bold text-gray-500">Bookings — Package 分佈</span></div><div className="text-2xl font-black text-gray-800">{formatNum(cur.bookings)} 組</div><div className="text-xs text-gray-400 mt-1">點擊展開明細</div></div>
-          <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 bg-opacity-50">
-            <div className="flex items-center justify-between mb-3"><div className="text-xs font-bold text-gray-500">Package 分佈</div><PeriodLegend dd={dd}/></div>
-            <div className="space-y-3">{pkgDefs.map(p=>{var curEntry=cur[p.entryKey];var pct=totalPkg>0?(curEntry/totalPkg*100).toFixed(1):"0";var prevQEntry=prevQ?prevQ[p.entryKey]:null;var yoyEntry=yoy?yoy[p.entryKey]:null;var isExpanded=!!expandedPkgs[p.name];var albumVal,albumPrevQ,albumYoY,sbVal,sbPrevQ,sbYoY,crownExtra;if(p.name==="Crown"){albumVal=cur.crownAlbum1980+cur.crownAlbum1438;albumPrevQ=prevQ?prevQ.crownAlbum1980+prevQ.crownAlbum1438:null;albumYoY=yoy?yoy.crownAlbum1980+yoy.crownAlbum1438:null;sbVal=0;sbPrevQ=null;sbYoY=null;crownExtra={a1980:cur.crownAlbum1980,a1438:cur.crownAlbum1438,a1980PrevQ:prevQ?prevQ.crownAlbum1980:null,a1438PrevQ:prevQ?prevQ.crownAlbum1438:null,a1980YoY:yoy?yoy.crownAlbum1980:null,a1438YoY:yoy?yoy.crownAlbum1438:null}}else{albumVal=cur[p.albumKey];albumPrevQ=prevQ?prevQ[p.albumKey]:null;albumYoY=yoy?yoy[p.albumKey]:null;sbVal=cur[p.sbKey];sbPrevQ=prevQ?prevQ[p.sbKey]:null;sbYoY=yoy?yoy[p.sbKey]:null;crownExtra=null}var totalSold=albumVal+(p.hasSB?sbVal:0);var headerConv=!p.isRoyal&&curEntry>0?totalSold/curEntry:null;var miniBars=[{label:dd.periodWord,value:curEntry,display:curEntry+" 組",color:CUR_COLOR}];if(prevQ&&prevQEntry!=null)miniBars.push({label:dd.prevQWord,value:prevQEntry,display:prevQEntry+" 組",color:PREVQ_COLOR});if(yoy&&yoyEntry!=null)miniBars.push({label:dd.yoyWord,value:yoyEntry,display:yoyEntry+" 組",color:YOY_COLOR});return(<div key={p.name} className={"rounded-2xl overflow-hidden border-2 transition-all "+(isExpanded?p.theme.border+" shadow-md":p.theme.border+" shadow-sm")}><button onClick={()=>togglePkg(p.name)} className={"w-full text-left "+p.theme.bg+" px-4 py-3 transition-all hover:opacity-90"}><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><div className="w-3.5 h-3.5 rounded-full shrink-0" style={{background:p.color}}/><span className={"text-sm font-black "+p.theme.text}>{p.icon} {p.name}</span><span className={"text-xs font-bold px-2 py-0.5 rounded-full "+p.theme.badgeBg+" "+p.theme.badgeText}>{pct}%</span>{headerConv!=null&&<span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white bg-opacity-80 text-gray-600">轉化 {(headerConv*100).toFixed(1)}%</span>}</div><div className="flex items-center gap-3"><div className="text-right"><span className="text-base font-black text-gray-800">{curEntry} 組</span></div><motion.span animate={{rotate:isExpanded?180:0}} className="text-gray-400 text-sm">▼</motion.span></div></div><MiniCompareBars items={miniBars} accentColor={p.color}/></button><AnimatePresence>{isExpanded&&<PkgAlbumDetail pkgName={p.name} theme={p.theme} dd={ddWithRefs} albumVal={albumVal} albumPrevQ={albumPrevQ} albumYoY={albumYoY} storybookVal={sbVal} storybookPrevQ={sbPrevQ} storybookYoY={sbYoY} entryVal={curEntry} entryPrevQ={prevQEntry} entryYoY={yoyEntry} hasSB={p.hasSB} crownExtra={crownExtra} isRoyal={p.isRoyal}/>}</AnimatePresence></div>)})}</div>
-          </div>
+          <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 bg-opacity-50"><div className="flex items-center justify-between mb-3"><div className="text-xs font-bold text-gray-500">Package 分佈</div><PeriodLegend dd={dd}/></div><div className="space-y-3">{pkgDefs.map(p=>{var curEntry=cur[p.entryKey];var pct=totalPkg>0?(curEntry/totalPkg*100).toFixed(1):"0";var prevQEntry=prevQ?prevQ[p.entryKey]:null;var yoyEntry=yoy?yoy[p.entryKey]:null;var isExpanded=!!expandedPkgs[p.name];var albumVal,albumPrevQ,albumYoY,sbVal,sbPrevQ,sbYoY,crownExtra;if(p.name==="Crown"){albumVal=cur.crownAlbum1980+cur.crownAlbum1438;albumPrevQ=prevQ?prevQ.crownAlbum1980+prevQ.crownAlbum1438:null;albumYoY=yoy?yoy.crownAlbum1980+yoy.crownAlbum1438:null;sbVal=0;sbPrevQ=null;sbYoY=null;crownExtra={a1980:cur.crownAlbum1980,a1438:cur.crownAlbum1438,a1980PrevQ:prevQ?prevQ.crownAlbum1980:null,a1438PrevQ:prevQ?prevQ.crownAlbum1438:null,a1980YoY:yoy?yoy.crownAlbum1980:null,a1438YoY:yoy?yoy.crownAlbum1438:null}}else{albumVal=cur[p.albumKey];albumPrevQ=prevQ?prevQ[p.albumKey]:null;albumYoY=yoy?yoy[p.albumKey]:null;sbVal=cur[p.sbKey];sbPrevQ=prevQ?prevQ[p.sbKey]:null;sbYoY=yoy?yoy[p.sbKey]:null;crownExtra=null}var totalSold=albumVal+(p.hasSB?sbVal:0);var headerConv=!p.isRoyal&&curEntry>0?totalSold/curEntry:null;var miniBars=[{label:dd.periodWord,value:curEntry,display:curEntry+" 組",color:CUR_COLOR}];if(prevQ&&prevQEntry!=null)miniBars.push({label:dd.prevQWord,value:prevQEntry,display:prevQEntry+" 組",color:PREVQ_COLOR});if(yoy&&yoyEntry!=null)miniBars.push({label:dd.yoyWord,value:yoyEntry,display:yoyEntry+" 組",color:YOY_COLOR});return(<div key={p.name} className={"rounded-2xl overflow-hidden border-2 transition-all "+(isExpanded?p.theme.border+" shadow-md":p.theme.border+" shadow-sm")}><button onClick={()=>togglePkg(p.name)} className={"w-full text-left "+p.theme.bg+" px-4 py-3 transition-all hover:opacity-90"}><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><div className="w-3.5 h-3.5 rounded-full shrink-0" style={{background:p.color}}/><span className={"text-sm font-black "+p.theme.text}>{p.icon} {p.name}</span><span className={"text-xs font-bold px-2 py-0.5 rounded-full "+p.theme.badgeBg+" "+p.theme.badgeText}>{pct}%</span>{headerConv!=null&&<span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white bg-opacity-80 text-gray-600">轉化 {(headerConv*100).toFixed(1)}%</span>}</div><div className="flex items-center gap-3"><span className="text-base font-black text-gray-800">{curEntry} 組</span><motion.span animate={{rotate:isExpanded?180:0}} className="text-gray-400 text-sm">▼</motion.span></div></div><MiniCompareBars items={miniBars} accentColor={p.color}/></button><AnimatePresence>{isExpanded&&<PkgAlbumDetail pkgName={p.name} theme={p.theme} dd={ddWithRefs} albumVal={albumVal} albumPrevQ={albumPrevQ} albumYoY={albumYoY} storybookVal={sbVal} storybookPrevQ={sbPrevQ} storybookYoY={sbYoY} entryVal={curEntry} entryPrevQ={prevQEntry} entryYoY={yoyEntry} hasSB={p.hasSB} crownExtra={crownExtra} isRoyal={p.isRoyal}/>}</AnimatePresence></div>)})}</div></div>
         </div>
         <div className="flex items-center gap-3 pt-1"><div className="h-px flex-1 bg-gradient-to-r from-transparent via-teal-200 to-transparent"/><span className="text-xs font-bold text-teal-500 tracking-wider">ADD-ON 加購</span><div className="h-px flex-1 bg-gradient-to-r from-transparent via-teal-200 to-transparent"/></div>
         <RovingInlineDetail theme={PKG_THEMES.Roving} dd={ddWithRefs} rovingAlbum={cur.rovingAlbum} rovingAlbumPrevQ={prevQ?prevQ.rovingAlbum:null} rovingAlbumYoY={yoy?yoy.rovingAlbum:null} rovingSecond={cur.rovingSecond} rovingSecondPrevQ={prevQ?prevQ.rovingSecond:null} rovingSecondYoY={yoy?yoy.rovingSecond:null}/>
@@ -637,108 +402,96 @@ function PBBBDashboard(){
     );
   }
 
-  /* ════════════════ renderStaff ════════════════ */
+  /* ══════ renderStaff ══════ */
   function renderStaff(){
     var periodLabels={day:"日",week:"週",month:"月",year:"年"};
-    function getMonthlyScores(){if(!currentData||!currentData.staffRatings[sel])return{};return currentData.staffRatings[sel].scores||{}}
-    function getMonthlyBiz(){if(!currentData||!currentData.staffRatings[sel])return{perCap:0,convRate:0};var r=currentData.staffRatings[sel];return{perCap:r.perCap,convRate:r.convRate}}
-    function getPrevMonthBiz(){if(!prevData||!prevData.staffRatings[sel])return null;var r=prevData.staffRatings[sel];return{perCap:r.perCap,convRate:r.convRate}}
+    function hasScores(scores){return scores&&Object.values(scores).some(v=>v>0)}
+    function getMonthlyScores(){if(!currentData||!currentData.staffRatings||!currentData.staffRatings[sel])return{};return currentData.staffRatings[sel].scores||{}}
     function getYearlyScores(){var yd=allMonths.filter(d=>d.year===selYear);var scores={};ALL_CRITERIA.forEach(c=>{var vals=yd.map(d=>d.staffRatings[sel]?d.staffRatings[sel].scores[c.key]||0:0).filter(v=>v>0);scores[c.key]=vals.length>0?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):0});return scores}
     function getYearlyAvg(){var s=getYearlyScores();var vals=Object.values(s).filter(v=>v>0);return vals.length>0?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):0}
-    function getYearlyBiz(){var yd=allMonths.filter(d=>d.year===selYear&&d.staffRatings[sel]);if(yd.length===0)return{perCap:0,convRate:0};var avgPC=Math.round(yd.reduce((s,d)=>s+d.staffRatings[sel].perCap,0)/yd.length);var totEntry=yd.reduce((s,d)=>s+d.staffRatings[sel].entry,0);var totAlbum=yd.reduce((s,d)=>s+d.staffRatings[sel].albumSold,0);var totSB=yd.reduce((s,d)=>s+d.staffRatings[sel].storybookSold,0);return{perCap:avgPC,convRate:totEntry>0?(totAlbum+totSB)/totEntry:0}}
-    function getPrevYearBiz(){var yd=allMonths.filter(d=>d.year===selYear-1&&d.staffRatings[sel]);if(yd.length===0)return null;var avgPC=Math.round(yd.reduce((s,d)=>s+d.staffRatings[sel].perCap,0)/yd.length);var totEntry=yd.reduce((s,d)=>s+d.staffRatings[sel].entry,0);var totAlbum=yd.reduce((s,d)=>s+d.staffRatings[sel].albumSold,0);var totSB=yd.reduce((s,d)=>s+d.staffRatings[sel].storybookSold,0);return{perCap:avgPC,convRate:totEntry>0?(totAlbum+totSB)/totEntry:0}}
     function renderTripleRadar(scores){return(<div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-black text-base text-gray-700 mb-4">🕸️ 能力雷達圖</div><div className="grid grid-cols-3 gap-3"><SingleRadarCard role="photo" scores={scores}/><SingleRadarCard role="asst" scores={scores}/><SingleRadarCard role="sales" scores={scores}/></div></div>)}
     function renderStrengthWeakness(scores){var rated=ALL_CRITERIA.map(c=>({key:c.key,name:c.name,icon:c.icon,val:scores[c.key]||0})).sort((a,b)=>b.val-a.val);var strengths=rated.slice(0,3);var weaknesses=rated.slice().reverse().slice(0,3);return(<div className="grid grid-cols-2 gap-3"><div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-200"><div className="font-black text-sm text-emerald-700 mb-3">💪 強項 Top 3</div>{strengths.map((c,i)=><div key={i} className="flex items-center gap-2 mb-2.5"><span className="text-lg">{c.icon}</span><div className="flex-1 min-w-0"><div className="text-xs font-bold text-gray-700 truncate">{c.name}</div></div><span className="text-base font-black text-emerald-600">{c.val}</span></div>)}</div><div className="bg-amber-50 rounded-2xl p-4 border border-amber-200"><div className="font-black text-sm text-amber-700 mb-3">⚡ 需加強 Top 3</div>{weaknesses.map((c,i)=><div key={i} className="flex items-center gap-2 mb-2.5"><span className="text-lg">{c.icon}</span><div className="flex-1 min-w-0"><div className="text-xs font-bold text-gray-700 truncate">{c.name}</div></div><span className="text-base font-black text-amber-600">{c.val}</span></div>)}</div></div>)}
 
-    /* ★ 空白狀態 component ★ */
-    function EmptyDrillDown({label}){return(<div className="bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200 p-10 text-center"><div className="text-3xl mb-3">📅</div><div className="text-sm font-bold text-gray-400 mb-1">{label}</div><div className="text-xs text-gray-300">日後接入每日數據後會自動顯示</div></div>)}
-
-    /* ★ 檢查有冇足夠分數顯示 ★ */
-    function hasScores(scores){return Object.values(scores).some(v=>v>0)}
-    /* ★ 檢查有冇 biz data ★ */
-    function hasBizData(biz){return biz&&(biz.perCap>0||biz.convRate>0)}
+    if(staffList.length===0)return(<div className="space-y-4"><h2 className="text-lg font-black text-gray-700">👤 同事評分</h2><EmptyCard icon="👤" title="未有同事名單" subtitle="請到設定頁面新增同事，或提交 IC 評分後自動讀取"/></div>);
 
     return(
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2"><h2 className="text-lg font-black text-gray-700">👤 同事評分</h2><YearMonthSelector selYear={selYear} selMon={selMon} years={availableYears} monthsForYear={monthsForYear} onYearChange={handleYearChange} onMonthChange={handleMonthChange}/></div>
         <div className="flex gap-2 items-center">
-          <div className="relative flex-1"><select value={sel} onChange={e=>{setSelectedStaff(e.target.value);setSelectedWeek(null)}} className="w-full appearance-none border-2 border-rose-200 rounded-xl px-4 py-3 pr-10 text-sm font-bold bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400 shadow-sm">{staffList.map(name=><option key={name} value={name}>{name}</option>)}</select><ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-400 pointer-events-none"/></div>
+          <div className="relative flex-1"><select value={sel} onChange={e=>setSelectedStaff(e.target.value)} className="w-full appearance-none border-2 border-rose-200 rounded-xl px-4 py-3 pr-10 text-sm font-bold bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-300 shadow-sm">{staffList.map(name=><option key={name} value={name}>{name}</option>)}</select><ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-400 pointer-events-none"/></div>
           <button onClick={()=>setShowRanking(true)} className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-orange-400 text-white font-bold px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all shrink-0"><Trophy className="w-4 h-4"/><span className="text-sm">排行</span></button>
         </div>
-        <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl">{["day","week","month","year"].map(p=>(<button key={p} onClick={()=>{setStaffViewPeriod(p);setSelectedWeek(null)}} className={staffViewPeriod===p?"flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-rose-600 shadow-sm":"flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-400"}>{periodLabels[p]}</button>))}</div>
+        <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl">{["day","week","month","year"].map(p=>(<button key={p} onClick={()=>setStaffViewPeriod(p)} className={staffViewPeriod===p?"flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-rose-600 shadow-sm":"flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-400"}>{periodLabels[p]}</button>))}</div>
 
-        {/* ★ Month view ★ */}
-        {sel&&staffViewPeriod==="month"&&(()=>{var mScores=getMonthlyScores();var mAvg=currentData&&currentData.staffRatings[sel]?currentData.staffRatings[sel].avg:0;var sc=getScoreColor(mAvg);var biz=getMonthlyBiz();var prevBiz=getPrevMonthBiz();var showBiz=hasBizData(biz);return(<div className="space-y-4">{hasScores(mScores)?<React.Fragment><div className={"rounded-2xl p-5 text-center border "+sc.bg+" "+sc.border}><div className="text-sm text-gray-400 mb-1">{selYear}年{MONTH_NAMES[selMon]} 平均</div><div className={"text-5xl font-black "+sc.text}>⭐ {mAvg}</div><div className={"text-base font-bold mt-1 "+sc.text}>{sc.label}</div></div>{showBiz&&<StaffBizKPIs perCap={biz.perCap} convRate={biz.convRate} prev={prevBiz} prevLabel="上月" periodLabel={selYear+"年"+MONTH_NAMES[selMon]}/>}{renderTripleRadar(mScores)}{renderStrengthWeakness(mScores)}</React.Fragment>:<div className="bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200 p-10 text-center"><div className="text-3xl mb-3">📊</div><div className="text-sm font-bold text-gray-400">此月份暫無 {sel} 嘅評分記錄</div></div>}<ICNotesSection staffName={sel} staffList={staffList} selYear={selYear} selMon={selMon} period="month" dataSource={dataSource} realNotes={realNotes}/></div>)})()}
+        {/* Day drill-down → 空白 */}
+        {staffViewPeriod==="day"&&<EmptyCard icon="📅" title="暫無每日明細數據" subtitle="日後接入每日數據後會自動顯示"/>}
 
-        {/* ★ Year view ★ */}
-        {sel&&staffViewPeriod==="year"&&(()=>{var yScores=getYearlyScores();var yAvg=getYearlyAvg();var sc=getScoreColor(yAvg);var biz=getYearlyBiz();var prevBiz=getPrevYearBiz();var showBiz=hasBizData(biz);return(<div className="space-y-4">{hasScores(yScores)?<React.Fragment><div className={"rounded-2xl p-5 text-center border "+sc.bg+" "+sc.border}><div className="text-sm text-gray-400 mb-1">{selYear}年 年度平均</div><div className={"text-5xl font-black "+sc.text}>⭐ {yAvg}</div></div>{showBiz&&<StaffBizKPIs perCap={biz.perCap} convRate={biz.convRate} prev={prevBiz} prevLabel="上年" periodLabel={selYear+"年 全年"}/>}{renderTripleRadar(yScores)}{renderStrengthWeakness(yScores)}</React.Fragment>:<div className="bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200 p-10 text-center"><div className="text-3xl mb-3">📊</div><div className="text-sm font-bold text-gray-400">此年度暫無 {sel} 嘅評分記錄</div></div>}<ICNotesSection staffName={sel} staffList={staffList} selYear={selYear} selMon={selMon} period="year" dataSource={dataSource} realNotes={realNotes}/></div>)})()}
+        {/* Week drill-down → 空白 */}
+        {staffViewPeriod==="week"&&<EmptyCard icon="📅" title="暫無每週明細數據" subtitle="日後接入每週數據後會自動顯示"/>}
 
-        {/* ★ Day view — 真實數據時顯示空白 ★ */}
-        {sel&&staffViewPeriod==="day"&&(()=>{
-          if(dataSource==="real")return <EmptyDrillDown label="暫無每日明細數據"/>;
-          var dayData=dailyScores.find(d=>d.day===selectedDay)||dailyScores[0];var prevDayData=dailyScores.find(d=>d.day===selectedDay-1)||null;var sc=getScoreColor(dayData?dayData.avg:0);return(<div className="space-y-4"><div className="overflow-x-auto"><div className="flex gap-1.5 pb-2" style={{minWidth:"max-content"}}>{dailyScores.map(d=>{var dsc=getScoreColor(d.avg);return(<button key={d.day} onClick={()=>setSelectedDay(d.day)} className={selectedDay===d.day?"flex flex-col items-center px-2.5 py-2 rounded-xl bg-rose-500 text-white shadow-sm":"flex flex-col items-center px-2.5 py-2 rounded-xl bg-white border border-gray-200"} style={{minWidth:40}}><span className="text-xs font-bold">{d.day}</span><span className="text-xs font-bold" style={{color:selectedDay===d.day?"white":dsc.color}}>{d.avg}</span></button>)})}</div></div>{dayData&&<div className="space-y-4"><div className={"rounded-2xl p-5 text-center border "+sc.bg+" "+sc.border}><div className="text-sm text-gray-400 mb-1">{selMon}月{selectedDay}日</div><div className={"text-5xl font-black "+sc.text}>⭐ {dayData.avg}</div></div><StaffBizKPIs perCap={dayData.perCap} convRate={dayData.convRate} prev={prevDayData?{perCap:prevDayData.perCap,convRate:prevDayData.convRate}:null} prevLabel="前一日" periodLabel={selMon+"月"+selectedDay+"日"}/>{renderTripleRadar(dayData.scores)}{renderStrengthWeakness(dayData.scores)}<ICNotesSection staffName={sel} staffList={staffList} selYear={selYear} selMon={selMon} period="day" dataSource={dataSource} realNotes={realNotes}/></div>}</div>)
-        })()}
+        {/* Month view */}
+        {staffViewPeriod==="month"&&sel&&(()=>{var mScores=getMonthlyScores();var mAvg=currentData&&currentData.staffRatings&&currentData.staffRatings[sel]?currentData.staffRatings[sel].avg:0;var sc=getScoreColor(mAvg);return(<div className="space-y-4">{hasScores(mScores)?<React.Fragment><div className={"rounded-2xl p-5 text-center border "+sc.bg+" "+sc.border}><div className="text-sm text-gray-400 mb-1">{selYear}年{MONTH_NAMES[selMon]} 平均</div><div className={"text-5xl font-black "+sc.text}>⭐ {mAvg}</div><div className={"text-base font-bold mt-1 "+sc.text}>{sc.label}</div></div>{renderTripleRadar(mScores)}{renderStrengthWeakness(mScores)}</React.Fragment>:<EmptyCard icon="📊" title={"此月份暫無 "+sel+" 嘅評分記錄"} subtitle="提交 IC 評分後會自動顯示"/>}<ICNotesSection staffName={sel} selYear={selYear} selMon={selMon} realNotes={realNotes}/></div>)})()}
 
-        {/* ★ Week view — 真實數據時顯示空白 ★ */}
-        {sel&&staffViewPeriod==="week"&&(()=>{
-          if(dataSource==="real")return <EmptyDrillDown label="暫無每週明細數據"/>;
-          if(selectedWeek==null)return(<div className="space-y-3">{weeks.map(w=>{var wsc=getScoreColor(w.avg);return(<button key={w.weekNum} onClick={()=>setSelectedWeek(w.weekNum)} className={"w-full text-left bg-white rounded-2xl p-4 shadow-sm border-2 hover:border-rose-300 "+wsc.border}><div className="flex items-center justify-between mb-2"><div><div className="text-base font-bold text-gray-700">第{w.weekNum}週</div><div className="text-sm text-gray-400">{selMon}月{w.startDay}日 - {w.endDay}日</div></div><CircleScore score={w.avg} color={wsc.color} size={56}/></div><div className="grid grid-cols-2 gap-2 mb-2"><div className="bg-emerald-50 rounded-lg px-2.5 py-1.5 text-center"><div className="text-xs text-gray-400">Per Cap</div><div className="text-sm font-black text-emerald-600">{formatMoney(w.perCap)}</div></div><div className="bg-blue-50 rounded-lg px-2.5 py-1.5 text-center"><div className="text-xs text-gray-400">轉化率</div><div className="text-sm font-black text-blue-600">{formatPct(w.convRate)}</div></div></div><div className="text-xs text-rose-400 font-bold text-right">查看明細 →</div></button>)})}</div>);
-          var week=weeks.find(w=>w.weekNum===selectedWeek);if(!week)return null;var prevWeek=weeks.find(w=>w.weekNum===selectedWeek-1)||null;var sc=getScoreColor(week.avg);return(<div className="space-y-4"><button onClick={()=>setSelectedWeek(null)} className="flex items-center gap-2 text-sm font-bold text-rose-500">← 返回</button><div className={"rounded-2xl p-5 text-center border "+sc.bg+" "+sc.border}><div className="text-sm text-gray-400">第{week.weekNum}週（{selMon}月{week.startDay}日 - {week.endDay}日）</div><div className={"text-4xl font-black mt-1 "+sc.text}>⭐ {week.avg}</div></div><StaffBizKPIs perCap={week.perCap} convRate={week.convRate} prev={prevWeek?{perCap:prevWeek.perCap,convRate:prevWeek.convRate}:null} prevLabel="上一週" periodLabel={"第"+week.weekNum+"週"}/>{renderTripleRadar(week.scores)}{renderStrengthWeakness(week.scores)}<ICNotesSection staffName={sel} staffList={staffList} selYear={selYear} selMon={selMon} period="week" dataSource={dataSource} realNotes={realNotes}/></div>);
-        })()}
+        {/* Year view */}
+        {staffViewPeriod==="year"&&sel&&(()=>{var yScores=getYearlyScores();var yAvg=getYearlyAvg();var sc=getScoreColor(yAvg);return(<div className="space-y-4">{hasScores(yScores)?<React.Fragment><div className={"rounded-2xl p-5 text-center border "+sc.bg+" "+sc.border}><div className="text-sm text-gray-400 mb-1">{selYear}年 年度平均</div><div className={"text-5xl font-black "+sc.text}>⭐ {yAvg}</div></div>{renderTripleRadar(yScores)}{renderStrengthWeakness(yScores)}</React.Fragment>:<EmptyCard icon="📊" title={"此年度暫無 "+sel+" 嘅評分記錄"}/>}<ICNotesSection staffName={sel} selYear={selYear} selMon={selMon} realNotes={realNotes}/></div>)})()}
 
-        <AnimatePresence>{showRanking&&<RankingPanel staffList={staffList} allMonths={allMonths} selYear={selYear} selMon={selMon} onClose={()=>setShowRanking(false)} dataSource={dataSource}/>}</AnimatePresence>
+        <AnimatePresence>{showRanking&&<RankingPanel staffList={staffList} allMonths={allMonths} selYear={selYear} selMon={selMon} onClose={()=>setShowRanking(false)}/>}</AnimatePresence>
       </div>
     );
   }
 
-  /* ════════════════ renderAnnual ════════════════ */
+  /* ══════ renderAnnual ══════ */
   function renderAnnual(){
+    if(!hasData)return(<div className="space-y-4"><h2 className="text-lg font-black text-gray-700">📅 年度</h2><EmptyCard icon="📅" title="暫無年度數據" subtitle="Google Sheet 入咗數據後會自動顯示"/></div>);
     var yearData=allMonths.filter(d=>d.year===selYear);var totRev=yearData.reduce((s,d)=>s+d.revenue,0);var totEntry=yearData.reduce((s,d)=>s+d.totalEntry,0);
     var lastYearData=allMonths.filter(d=>d.year===selYear-1);var lyRev=lastYearData.reduce((s,d)=>s+d.revenue,0);var lyEntry=lastYearData.reduce((s,d)=>s+d.totalEntry,0);
     var chartData=yearData.map(d=>({name:MONTH_NAMES[d.month],revenue:d.revenue}));
     return(<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📅 {selYear}年 年度</h2><select value={selYear} onChange={e=>handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y=><option key={y} value={y}>{y}年</option>)}</select></div><div className="grid grid-cols-2 gap-3"><KPICard icon="💰" label="年度營收" value={formatMoney(totRev)} badges={lyRev>0?<MomBadge current={totRev} previous={lyRev} prevLabel={formatMoney(lyRev)} tag="上年"/>:null}/><KPICard icon="🚪" label="年度 Bookings" value={formatNum(totEntry)+" 組"} badges={lyEntry>0?<MomBadge current={totEntry} previous={lyEntry} prevLabel={formatNum(lyEntry)+" 組"} tag="上年"/>:null}/></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📊 月營收趨勢</div>{chartData.length>0?<ResponsiveContainer width="100%" height={220}><AreaChart data={chartData}><defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6"/><XAxis dataKey="name" tick={{fontSize:10}}/><YAxis tick={{fontSize:10}} tickFormatter={v=>Math.round(v/1000)+"k"}/><Tooltip formatter={v=>["$"+v.toLocaleString()]}/><Area type="monotone" dataKey="revenue" stroke="#f43f5e" fill="url(#revGrad)" strokeWidth={2.5} dot={{r:3,fill:"#f43f5e"}}/></AreaChart></ResponsiveContainer>:<div className="py-8 text-center text-sm text-gray-400">暫無數據</div>}</div></div>);
   }
 
-  /* ════════════════ renderYoY ════════════════ */
+  /* ══════ renderYoY ══════ */
   function renderYoY(){
+    if(!hasData)return(<div className="space-y-4"><h2 className="text-lg font-black text-gray-700">📈 YoY 比較</h2><EmptyCard icon="📈" title="暫無 YoY 數據" subtitle="需要至少兩年數據才能比較"/></div>);
     var cy=selYear;var ly=selYear-1;var cyMs=allMonths.filter(d=>d.year===cy);var lyMs=allMonths.filter(d=>d.year===ly);
     var revenueChart=[];for(var i=1;i<=12;i++){var cM=cyMs.find(d=>d.month===i);var lM=lyMs.find(d=>d.month===i);revenueChart.push({name:MONTH_NAMES[i],cur:cM?cM.revenue:0,prev:lM?lM.revenue:0})}
     return(<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📈 YoY 比較</h2><select value={selYear} onChange={e=>handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y=><option key={y} value={y}>{y}年</option>)}</select></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">💰 月營收 YoY ({cy} vs {ly})</div><ResponsiveContainer width="100%" height={220}><LineChart data={revenueChart}><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6"/><XAxis dataKey="name" tick={{fontSize:10}}/><YAxis tick={{fontSize:10}} tickFormatter={v=>Math.round(v/1000)+"k"}/><Tooltip formatter={v=>["$"+v.toLocaleString()]}/><Legend/><Line type="monotone" dataKey="cur" name={String(cy)} stroke="#f43f5e" strokeWidth={2.5} dot={{r:3,fill:"#f43f5e"}}/><Line type="monotone" dataKey="prev" name={String(ly)} stroke="#fda4af" strokeWidth={2} dot={{r:2.5,fill:"#fda4af"}} strokeDasharray="6 3"/></LineChart></ResponsiveContainer></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📋 逐月對比</div><table className="w-full text-xs"><thead><tr className="bg-gray-50"><th className="p-2 text-left">月</th><th className="p-2 text-right">{cy}</th><th className="p-2 text-right">{ly}</th><th className="p-2 text-right">變化</th></tr></thead><tbody>{Array.from({length:12},(_,i)=>{var m=i+1;var cM2=cyMs.find(d=>d.month===m);var lM2=lyMs.find(d=>d.month===m);return(<tr key={m} className="border-t border-gray-100"><td className="p-2 font-bold">{MONTH_NAMES[m]}</td><td className="p-2 text-right">{cM2?formatMoney(cM2.revenue):"—"}</td><td className="p-2 text-right">{lM2?formatMoney(lM2.revenue):"—"}</td><td className="p-2 text-right">{cM2&&lM2?<MomBadge current={cM2.revenue} previous={lM2.revenue}/>:"—"}</td></tr>)})}</tbody></table></div></div>);
   }
 
-  /* ════════════════ renderSettings ════════════════ */
+  /* ══════ renderSettings ══════ */
   function renderSettings(){
     if(!settingsUnlocked)return <PasswordGate onUnlock={()=>setSettingsUnlocked(true)}/>;
     return(
       <div className="space-y-5">
         <div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">⚙️ 設定</h2><button onClick={()=>setSettingsUnlocked(false)} className="flex items-center gap-1.5 text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-all"><Lock className="w-3.5 h-3.5"/><span>鎖定</span></button></div>
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl px-4 py-2.5 border border-emerald-200 flex items-center gap-2"><Unlock className="w-4 h-4 text-emerald-500"/><span className="text-sm font-bold text-emerald-600">已解鎖</span></div>
+        <div className={"rounded-xl px-4 py-2.5 border flex items-center gap-2 "+(connectStatus==="connected"?"bg-blue-50 border-blue-200":"bg-red-50 border-red-200")}><span className="text-sm font-bold">{statusBadge}</span></div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-4"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center text-white text-sm">👥</div><div><div className="font-bold text-base text-gray-700">同事名單</div><div className="text-xs text-gray-400">{staffList.length} 位同事</div></div></div>
+          {staffList.length===0&&<div className="text-sm text-gray-400 bg-gray-50 rounded-xl p-4 mb-3 text-center">未有同事，可手動新增或提交評分後自動讀取</div>}
           <div className="space-y-2 mb-3">{staffList.map(name=>(<div key={name} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm">{name[0]}</div><span className="font-semibold text-sm">{name}</span></div><button onClick={()=>setStaffList(staffList.filter(x=>x!==name))} className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-all">✕</button></div>))}</div>
           <div className="flex gap-2"><input value={newStaffName} onChange={e=>setNewStaffName(e.target.value)} placeholder="新同事名..." className="flex-1 border-2 border-pink-200 rounded-xl px-3 py-2.5 text-sm bg-pink-50 focus:outline-none focus:ring-2 focus:ring-rose-300" onKeyDown={e=>{if(e.key==="Enter"&&newStaffName.trim()){setStaffList(staffList.concat([newStaffName.trim()]));setNewStaffName("")}}}/><button onClick={()=>{if(newStaffName.trim()){setStaffList(staffList.concat([newStaffName.trim()]));setNewStaffName("")}}} className="bg-gradient-to-r from-rose-400 to-pink-400 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all">+ 加</button></div>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-4"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-400 to-purple-400 flex items-center justify-center text-white text-sm"><Shield className="w-4 h-4"/></div><div><div className="font-bold text-base text-gray-700">IC 名單</div><div className="text-xs text-gray-400">{icList.length} 位 IC</div></div></div>
+          {icList.length===0&&<div className="text-sm text-gray-400 bg-gray-50 rounded-xl p-4 mb-3 text-center">未有 IC，可手動新增</div>}
           <div className="space-y-2 mb-3">{icList.map(name=>(<div key={name} className="flex items-center justify-between bg-violet-50 rounded-xl px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-400 flex items-center justify-center text-white font-bold text-sm">{name[0]}</div><span className="font-semibold text-sm text-violet-700">{name}</span></div><button onClick={()=>setICList(icList.filter(x=>x!==name))} className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-all">✕</button></div>))}</div>
           <div className="flex gap-2"><input value={newICName} onChange={e=>setNewICName(e.target.value)} placeholder="新 IC 名..." className="flex-1 border-2 border-violet-200 rounded-xl px-3 py-2.5 text-sm bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-300" onKeyDown={e=>{if(e.key==="Enter"&&newICName.trim()){setICList(icList.concat([newICName.trim()]));setNewICName("")}}}/><button onClick={()=>{if(newICName.trim()){setICList(icList.concat([newICName.trim()]));setNewICName("")}}} className="bg-gradient-to-r from-violet-400 to-purple-400 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all">+ 加</button></div>
         </div>
-        <ICPerformanceRanking icList={icList} allMonths={allMonths} dataSource={dataSource}/>
+        <ICPerformanceRanking icList={icList}/>
       </div>
     );
   }
 
-  /* ════════════════ TABS ════════════════ */
+  /* ══════ TABS ══════ */
   var TABS=[{id:"overview",icon:"📊",label:"總覽"},{id:"staff",icon:"👤",label:"同事"},{id:"details",icon:"📋",label:"明細"},{id:"annual",icon:"📅",label:"年度"},{id:"yoy",icon:"📈",label:"YoY"},{id:"settings",icon:"⚙️",label:"設定"}];
 
-  /* ★ Loading 畫面 ★ */
-  if(loading){return(<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-center"><div className="text-5xl mb-4" style={{animation:"pulse 1.5s infinite"}}>👑</div><div className="text-lg font-bold text-gray-700">載入數據中...</div><div className="text-sm text-gray-400 mt-1">正在連接 Google Sheet</div></div></div>)}
+  if(loading){return(<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-center"><div className="text-5xl mb-4" style={{animation:"pulse 1.5s infinite"}}>👑</div><div className="text-lg font-bold text-gray-700">載入中...</div><div className="text-sm text-gray-400 mt-1">正在連接 Google Sheet</div></div></div>)}
 
   return(
     <div className="min-h-screen bg-gray-50">
       <div className="px-5 pt-6 pb-8 text-white relative overflow-hidden" style={{background:"linear-gradient(135deg,#f9a8d4,#fb7185,#f472b6)"}}>
         <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full" style={{transform:"translate(30px,-30px)"}}/>
-        <div className="relative max-w-2xl mx-auto"><div className="text-xs opacity-70 tracking-wider mb-1">👑 PRINCESS BEAUTY BOUTIQUE</div><div className="text-xl font-extrabold">PBBB Dashboard</div><div className="text-xs opacity-50">公主化妝廳 · 後台分析{dataSource==="real"?" · ✅ 真實數據":dataSource==="sample"?" · ⚠️ 示範數據":""}</div></div>
+        <div className="relative max-w-2xl mx-auto"><div className="text-xs opacity-70 tracking-wider mb-1">👑 PRINCESS BEAUTY BOUTIQUE</div><div className="text-xl font-extrabold">PBBB Dashboard</div><div className="text-xs opacity-60 mt-0.5">{statusBadge}</div></div>
       </div>
       <div className="sticky top-0 z-40 bg-white border-b border-gray-200 overflow-x-auto">
         <div className="flex gap-1 px-3 py-2" style={{minWidth:"max-content"}}>{TABS.map(t=>(<button key={t.id} onClick={()=>setActiveTab(t.id)} className={activeTab===t.id?"px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-gradient-to-r from-rose-400 to-pink-400 text-white shadow":"px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap text-gray-500 hover:bg-gray-100"}>{t.icon} {t.label}</button>))}</div>
@@ -756,7 +509,6 @@ function PBBBDashboard(){
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<PBBBDashboard/>);
-
 </script>
 </body>
 </html>
