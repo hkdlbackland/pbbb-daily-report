@@ -19,7 +19,6 @@
   <div id="root"></div>
   <script type="text/babel">
 
-/* ═══════ Shims：motion / AnimatePresence / lucide icons ═══════ */
 function createMotionComponent(tag) {
   return function MotionComp(props) {
     var { initial, animate, exit, transition, whileHover, whileTap, layout, style, ...rest } = props;
@@ -50,11 +49,8 @@ function Shield({ className }) { return <svg className={className} viewBox="0 0 
 function Eye({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>; }
 function EyeOff({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>; }
 
-/* ═══════ Destructure from globals ═══════ */
 var { useState, useMemo } = React;
 var { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area } = Recharts;
-
-/* ═══════ 以下係你原本嘅 code（只移除咗 import/export）═══════ */
 
 const MONTH_NAMES = ["", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 const SEASON_FACTOR = [0.75, 0.8, 0.95, 1.05, 1, 0.9, 1.15, 1.1, 1, 0.95, 0.85, 1.25];
@@ -187,7 +183,6 @@ function generateAllData(staffList) {
       var addOn498Eligible = royalAlbum + castleAlbum + paradeAlbum + crownAlbum1980 + addOnAlbum;
       var addOnSoftcopy = Math.round(addOn498Eligible * (0.25 + rand() * 0.2));
       var print8R = Math.round(totalEntry * 0.15 * jitter()); var print8RSecond = Math.round(totalEntry * 0.1 * jitter());
-      /* ✅ 改動2: Bookings = Entry */
       var bookings = totalEntry;
       var freePrint168 = bookings;
       var totalProducts = mainProducts + addOnAlbum + addOnStorybook + rovingAlbum + rovingSecond + addOnSoftcopy + print8R + print8RSecond + freePrint168;
@@ -227,7 +222,6 @@ function generateICBizData(icList, year, month) {
     var totalBookSold = albumSold + storybookSold;
     var convRate = baseEntry > 0 ? totalBookSold / baseEntry : 0;
     var revenue = Math.round((albumSold * 1780 + storybookSold * 1680 + baseEntry * 168) * (0.9 + rand() * 0.2));
-    /* ✅ 改動3: Bookings = Entry */
     var bookings = baseEntry;
     var perCap = Math.round(revenue / Math.max(bookings, 1));
     return { name, entry: baseEntry, albumSold, storybookSold, totalBookSold, convRate, revenue, bookings, perCap };
@@ -246,7 +240,6 @@ function generateICYearData(icList, year) {
       var albumSold = Math.round(baseEntry * albumRate);
       var storybookSold = Math.round(baseEntry * sbRate);
       var rev = Math.round((albumSold * 1780 + storybookSold * 1680 + baseEntry * 168) * (0.9 + rand() * 0.2));
-      /* ✅ 改動4: Bookings = Entry */
       var bk = baseEntry;
       totalEntry += baseEntry; totalAlbum += albumSold; totalSB += storybookSold; totalRevenue += rev; totalBookings += bk;
     }
@@ -325,7 +318,6 @@ function aggregateMonthData(dataArr) {
   return r;
 }
 
-/* ✅ 改動5a: fontSize 10→11 手機適配 */
 function MiniCompareBars({ items, accentColor }) {
   if (!items || items.length === 0) return null;
   var maxVal = Math.max(...items.map(b => Math.abs(b.value || 0)), 1);
@@ -375,7 +367,6 @@ function ConvRing({ rate, size = 52, color, strokeW = 5 }) {
   return (<svg width={size} height={size} className="shrink-0"><circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth={strokeW} /><circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeW} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transform: "rotate(-90deg)", transformOrigin: "center" }} /><text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill={color}>{(rate * 100).toFixed(1)}%</text></svg>);
 }
 
-/* ✅ 改動5b: fontSize 10→11 手機適配 */
 function ConvCompareBars({ items, accentColor }) {
   if (!items || items.length === 0) return null;
   return (
@@ -520,12 +511,14 @@ function PkgAlbumDetail({ pkgName, theme, albumVal, albumPrevQ, albumYoY, storyb
   return (
     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
       <div className={theme.bg + " px-4 py-4 space-y-3 border-t " + theme.border}>
-        {isRoyal && (<div className="bg-white bg-opacity-80 rounded-xl p-3 border border-rose-100 flex items-center gap-2.5"><span className="text-xl">👸</span><div><div className="text-xs font-bold text-rose-600">Royal Package 自動包含</div><div className="text-xs text-gray-500 leading-relaxed mt-0.5">每位入場客人自動獲得一本 Album 或 Storybook</div></div></div>)}
+        {isRoyal && (<div className="bg-white bg-opacity-80 rounded-xl p-3 border border-rose-100 flex items-center gap-2.5"><span className="text-xl">👸</span><div><div className="text-xs font-bold text-rose-600">Royal Package 自動包含</div><div className="text-xs text-gray-500 leading-relaxed mt-0.5">每位 Booking 自動獲得一本 Album 或 Storybook</div></div></div>)}
+        {/* ✅ 改動③ 上面: "每位入場客人" → "每位 Booking" */}
         {!isRoyal && (
           <div className="bg-white bg-opacity-90 rounded-xl p-3.5 border-2 border-dashed" style={{ borderColor: theme.accent + "60" }}>
             <div className="flex items-center justify-between mb-2"><div className="flex items-center gap-2"><span className="text-base">📊</span><span className="text-sm font-black text-gray-700">轉化率</span></div></div>
             <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-3 mb-2.5 border border-gray-100">
-              <div className="flex items-center gap-3 mb-2"><ConvRing rate={combinedConv} color={theme.accent} size={52} /><div className="flex-1"><div className="text-xs font-bold text-gray-500">合計（Album{hasSB ? " + Storybook" : ""}）</div><div className="text-lg font-black" style={{ color: theme.accent }}>{(combinedConv * 100).toFixed(1)}%</div><div className="text-xs text-gray-400">{totalSold} / {entryVal} 組入場</div></div></div>
+              {/* ✅ 改動④: "組入場" → "組 Bookings" */}
+              <div className="flex items-center gap-3 mb-2"><ConvRing rate={combinedConv} color={theme.accent} size={52} /><div className="flex-1"><div className="text-xs font-bold text-gray-500">合計（Album{hasSB ? " + Storybook" : ""}）</div><div className="text-lg font-black" style={{ color: theme.accent }}>{(combinedConv * 100).toFixed(1)}%</div><div className="text-xs text-gray-400">{totalSold} / {entryVal} 組 Bookings</div></div></div>
               <ConvCompareBars items={makeConvBars(combinedConv, combinedConvPrevQ, combinedConvYoY)} accentColor={theme.accent} />
             </div>
             <div className="flex gap-2.5">
@@ -677,7 +670,8 @@ function ICPerformanceRanking({ icList, allMonths }) {
                   <div className={"rounded-xl p-2.5 text-center " + (rankBy === "revenue" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💰 帳面數字</div><div className={"text-sm font-black " + (rankBy === "revenue" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.revenue)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.revenue)}</span></div>)}</div>
                   <div className={"rounded-xl p-2.5 text-center " + (rankBy === "perCap" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💵 Per Cap</div><div className={"text-sm font-black " + (rankBy === "perCap" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.perCap)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.perCap)}</span></div>)}</div>
                 </div>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><span>📕 Album {ic.albumSold}</span><span>📗 Storybook {ic.storybookSold}</span><span>🚪 Entry {ic.entry}</span></div>
+                {/* ✅ 改動⑤: "🚪 Entry" → "🚪 Bookings" */}
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><span>📕 Album {ic.albumSold}</span><span>📗 Storybook {ic.storybookSold}</span><span>🚪 Bookings {ic.entry}</span></div>
               </div>
             </div>
           );
@@ -809,7 +803,8 @@ function PBBBDashboard() {
         <div className="flex items-center justify-between flex-wrap gap-2"><h2 className="text-lg font-black text-gray-700">📊 總覽</h2><YearMonthSelector selYear={selYear} selMon={selMon} years={availableYears} monthsForYear={monthsForYear} onYearChange={handleYearChange} onMonthChange={handleMonthChange} /></div>
         <div className="grid grid-cols-2 gap-3">
           <KPICard icon="💰" label="帳面營收" value={formatMoney(currentData.revenue)} badges={<MomBadge current={currentData.revenue} previous={prevData ? prevData.revenue : null} prevLabel={prevData ? formatMoney(prevData.revenue) : null} />} />
-          <KPICard icon="🚪" label="入場 Entry" value={formatNum(currentData.totalEntry) + " 組"} badges={<MomBadge current={currentData.totalEntry} previous={prevData ? prevData.totalEntry : null} prevLabel={prevData ? formatNum(prevData.totalEntry) + " 組" : null} />} />
+          {/* ✅ 改動①: "入場 Entry" → "Bookings" */}
+          <KPICard icon="🚪" label="Bookings" value={formatNum(currentData.totalEntry) + " 組"} badges={<MomBadge current={currentData.totalEntry} previous={prevData ? prevData.totalEntry : null} prevLabel={prevData ? formatNum(prevData.totalEntry) + " 組" : null} />} />
           <KPICard icon="🛍️" label="出售產品" value={formatNum(currentData.totalProducts) + " 件"} badges={<MomBadge current={currentData.totalProducts} previous={prevData ? prevData.totalProducts : null} prevLabel={prevData ? formatNum(prevData.totalProducts) + " 件" : null} />} />
           <KPICard icon="📈" label="轉化率" value={formatPct(currentData.conv)} badges={<MomBadge current={currentData.conv} previous={prevData ? prevData.conv : null} isPct={true} prevLabel={prevData ? formatPct(prevData.conv) : null} />} />
         </div>
@@ -819,7 +814,8 @@ function PBBBDashboard() {
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-1">💵 每日 Per Cap 趨勢</div><ResponsiveContainer width="100%" height={220}><LineChart data={dailyData}><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" /><XAxis dataKey="day" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} tickFormatter={v => "$" + v.toLocaleString()} domain={[perCapChartBounds.min, perCapChartBounds.max]} /><Tooltip formatter={(v, name) => ["$" + v.toLocaleString(), name === "perCap" ? "本月" : "上月"]} /><Line type="monotone" dataKey="prevPerCap" stroke="#fda4af" strokeWidth={2} dot={false} strokeDasharray="6 3" /><Line type="monotone" dataKey="perCap" stroke="#f43f5e" strokeWidth={2.5} dot={{ r: 2, fill: "#f43f5e", strokeWidth: 0 }} /></LineChart></ResponsiveContainer></div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3"><div className="font-bold text-sm text-gray-700">🎯 Package 入場分佈</div></div>
+          {/* ✅ 改動②: "Package 入場分佈" → "Package Bookings 分佈" */}
+          <div className="flex items-center justify-between mb-3"><div className="font-bold text-sm text-gray-700">🎯 Package Bookings 分佈</div></div>
           <div className="flex gap-4">
             <div className="shrink-0"><ResponsiveContainer width={160} height={160}><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={28} outerRadius={55} dataKey="value" paddingAngle={2}>{pieData.map((d, i) => <Cell key={i} fill={d.color} />)}</Pie><Tooltip content={<CustomPieTooltip />} /></PieChart></ResponsiveContainer></div>
             <div className="flex-1 space-y-2.5">{pkgItems.map(p => { var pct = totalPkgEntry > 0 ? ((p.value / totalPkgEntry) * 100).toFixed(1) : "0"; var entryPc = p.prevValue != null && p.prevValue > 0 ? pctChange(p.value, p.prevValue) : null; return (<div key={p.name}><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full shrink-0" style={{ background: p.color }} /><div className="flex-1 min-w-0"><div className="flex justify-between items-baseline"><span className="text-sm font-bold text-gray-700">{p.icon} {p.name}</span><span className="text-sm font-black">{p.value} 組</span></div><div className="flex items-center gap-2 mt-0.5 flex-wrap"><span className="text-xs text-gray-400">{pct}%</span>{p.prevValue != null && <span className="text-xs text-gray-300">上月 {p.prevValue}</span>}{entryPc != null && <ChangeBadge pct={entryPc} />}</div></div></div></div>); })}</div>
@@ -932,12 +928,13 @@ function PBBBDashboard() {
     var yearData = allMonths.filter(d => d.year === selYear); var totRev = yearData.reduce((s, d) => s + d.revenue, 0); var totEntry = yearData.reduce((s, d) => s + d.totalEntry, 0);
     var lastYearData = allMonths.filter(d => d.year === selYear - 1); var lyRev = lastYearData.reduce((s, d) => s + d.revenue, 0); var lyEntry = lastYearData.reduce((s, d) => s + d.totalEntry, 0);
     var chartData = yearData.map(d => ({ name: MONTH_NAMES[d.month], revenue: d.revenue }));
-    return (<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📅 {selYear}年 年度</h2><select value={selYear} onChange={e => handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y => <option key={y} value={y}>{y}年</option>)}</select></div><div className="grid grid-cols-2 gap-3"><KPICard icon="💰" label="年度營收" value={formatMoney(totRev)} badges={lyRev > 0 ? <MomBadge current={totRev} previous={lyRev} prevLabel={formatMoney(lyRev)} tag="上年" /> : null} /><KPICard icon="🚪" label="年度入場" value={formatNum(totEntry) + " 組"} badges={lyEntry > 0 ? <MomBadge current={totEntry} previous={lyEntry} prevLabel={formatNum(lyEntry) + " 組"} tag="上年" /> : null} /></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📊 月營收趨勢</div><ResponsiveContainer width="100%" height={220}><AreaChart data={chartData}><defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3} /><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} tickFormatter={v => Math.round(v / 1000) + "k"} /><Tooltip formatter={v => ["$" + v.toLocaleString()]} /><Area type="monotone" dataKey="revenue" stroke="#f43f5e" fill="url(#revGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "#f43f5e" }} /></AreaChart></ResponsiveContainer></div></div>);
+    return (<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📅 {selYear}年 年度</h2><select value={selYear} onChange={e => handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y => <option key={y} value={y}>{y}年</option>)}</select></div><div className="grid grid-cols-2 gap-3"><KPICard icon="💰" label="年度營收" value={formatMoney(totRev)} badges={lyRev > 0 ? <MomBadge current={totRev} previous={lyRev} prevLabel={formatMoney(lyRev)} tag="上年" /> : null} />
+    {/* ✅ 改動⑥: "年度入場" → "年度 Bookings" */}
+    <KPICard icon="🚪" label="年度 Bookings" value={formatNum(totEntry) + " 組"} badges={lyEntry > 0 ? <MomBadge current={totEntry} previous={lyEntry} prevLabel={formatNum(lyEntry) + " 組"} tag="上年" /> : null} /></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📊 月營收趨勢</div><ResponsiveContainer width="100%" height={220}><AreaChart data={chartData}><defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.3} /><stop offset="100%" stopColor="#f43f5e" stopOpacity={0.05} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} tickFormatter={v => Math.round(v / 1000) + "k"} /><Tooltip formatter={v => ["$" + v.toLocaleString()]} /><Area type="monotone" dataKey="revenue" stroke="#f43f5e" fill="url(#revGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "#f43f5e" }} /></AreaChart></ResponsiveContainer></div></div>);
   }
 
   function renderYoY() {
     var cy = selYear; var ly = selYear - 1; var cyMs = allMonths.filter(d => d.year === cy); var lyMs = allMonths.filter(d => d.year === ly);
-    /* ✅ 改動5c: fontSize 9→10 手機適配 */
     var revenueChart = []; for (var i = 1; i <= 12; i++) { var cM = cyMs.find(d => d.month === i); var lM = lyMs.find(d => d.month === i); revenueChart.push({ name: MONTH_NAMES[i], cur: cM ? cM.revenue : 0, prev: lM ? lM.revenue : 0 }); }
     return (<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📈 YoY 比較</h2><select value={selYear} onChange={e => handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y => <option key={y} value={y}>{y}年</option>)}</select></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">💰 月營收 YoY ({cy} vs {ly})</div><ResponsiveContainer width="100%" height={220}><LineChart data={revenueChart}><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} tickFormatter={v => Math.round(v / 1000) + "k"} /><Tooltip formatter={v => ["$" + v.toLocaleString()]} /><Legend /><Line type="monotone" dataKey="cur" name={String(cy)} stroke="#f43f5e" strokeWidth={2.5} dot={{ r: 3, fill: "#f43f5e" }} /><Line type="monotone" dataKey="prev" name={String(ly)} stroke="#fda4af" strokeWidth={2} dot={{ r: 2.5, fill: "#fda4af" }} strokeDasharray="6 3" /></LineChart></ResponsiveContainer></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📋 逐月對比</div><table className="w-full text-xs"><thead><tr className="bg-gray-50"><th className="p-2 text-left">月</th><th className="p-2 text-right">{cy}</th><th className="p-2 text-right">{ly}</th><th className="p-2 text-right">變化</th></tr></thead><tbody>{Array.from({ length: 12 }, (_, i) => { var m = i + 1; var cM2 = cyMs.find(d => d.month === m); var lM2 = lyMs.find(d => d.month === m); return (<tr key={m} className="border-t border-gray-100"><td className="p-2 font-bold">{MONTH_NAMES[m]}</td><td className="p-2 text-right">{cM2 ? formatMoney(cM2.revenue) : "—"}</td><td className="p-2 text-right">{lM2 ? formatMoney(lM2.revenue) : "—"}</td><td className="p-2 text-right">{cM2 && lM2 ? <MomBadge current={cM2.revenue} previous={lM2.revenue} /> : "—"}</td></tr>); })}</tbody></table></div></div>);
   }
@@ -995,7 +992,6 @@ function PBBBDashboard() {
   );
 }
 
-/* ═══════ Render to DOM ═══════ */
 ReactDOM.createRoot(document.getElementById("root")).render(<PBBBDashboard />);
 
   </script>
