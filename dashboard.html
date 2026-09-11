@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BB Dashboard</title>
+  <title>PBBB Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -187,7 +187,9 @@ function generateAllData(staffList) {
       var addOn498Eligible = royalAlbum + castleAlbum + paradeAlbum + crownAlbum1980 + addOnAlbum;
       var addOnSoftcopy = Math.round(addOn498Eligible * (0.25 + rand() * 0.2));
       var print8R = Math.round(totalEntry * 0.15 * jitter()); var print8RSecond = Math.round(totalEntry * 0.1 * jitter());
-      var bookings = totalEntry + Math.round(totalEntry * 0.05 * rand()); var freePrint168 = bookings;
+      /* ✅ 改動2: Bookings = Entry */
+      var bookings = totalEntry;
+      var freePrint168 = bookings;
       var totalProducts = mainProducts + addOnAlbum + addOnStorybook + rovingAlbum + rovingSecond + addOnSoftcopy + print8R + print8RSecond + freePrint168;
       var revenue = royalAlbum * 1980 + royalStorybook * 1980 + castleAlbum * 1980 + castleStorybook * 1980 + paradeAlbum * 1500 + paradeStorybook * 1500 + crownAlbum1980 * 1980 + crownAlbum1438 * 1438 + addOnAlbum * 1688 + addOnStorybook * 1688 + rovingAlbum * 1688 + rovingSecond * 1299 + addOnSoftcopy * 498 + print8R * 168 + print8RSecond * 130 + freePrint168 * 168;
       var netSales = Math.round(revenue * (0.85 + rand() * 0.1));
@@ -225,7 +227,8 @@ function generateICBizData(icList, year, month) {
     var totalBookSold = albumSold + storybookSold;
     var convRate = baseEntry > 0 ? totalBookSold / baseEntry : 0;
     var revenue = Math.round((albumSold * 1780 + storybookSold * 1680 + baseEntry * 168) * (0.9 + rand() * 0.2));
-    var bookings = baseEntry + Math.round(baseEntry * 0.05 * rand());
+    /* ✅ 改動3: Bookings = Entry */
+    var bookings = baseEntry;
     var perCap = Math.round(revenue / Math.max(bookings, 1));
     return { name, entry: baseEntry, albumSold, storybookSold, totalBookSold, convRate, revenue, bookings, perCap };
   });
@@ -243,7 +246,8 @@ function generateICYearData(icList, year) {
       var albumSold = Math.round(baseEntry * albumRate);
       var storybookSold = Math.round(baseEntry * sbRate);
       var rev = Math.round((albumSold * 1780 + storybookSold * 1680 + baseEntry * 168) * (0.9 + rand() * 0.2));
-      var bk = baseEntry + Math.round(baseEntry * 0.05 * rand());
+      /* ✅ 改動4: Bookings = Entry */
+      var bk = baseEntry;
       totalEntry += baseEntry; totalAlbum += albumSold; totalSB += storybookSold; totalRevenue += rev; totalBookings += bk;
     }
     var totalBookSold = totalAlbum + totalSB;
@@ -321,6 +325,7 @@ function aggregateMonthData(dataArr) {
   return r;
 }
 
+/* ✅ 改動5a: fontSize 10→11 手機適配 */
 function MiniCompareBars({ items, accentColor }) {
   if (!items || items.length === 0) return null;
   var maxVal = Math.max(...items.map(b => Math.abs(b.value || 0)), 1);
@@ -328,7 +333,7 @@ function MiniCompareBars({ items, accentColor }) {
     <div className="mt-1.5 space-y-1">
       {items.map((b, i) => {
         var w = Math.max((Math.abs(b.value) / maxVal) * 100, 2);
-        return (<div key={i} className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: b.color }} /><span className="text-xs w-10 shrink-0 truncate" style={{ color: b.color, fontWeight: 700, fontSize: 10 }}>{b.label}</span><div className="flex-1 h-3 bg-white bg-opacity-60 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{ width: w + "%", background: accentColor || b.color, opacity: i === 0 ? 1 : 0.4 }} /></div><span className={"text-xs font-black w-16 text-right shrink-0 " + (i === 0 ? "text-gray-700" : "text-gray-400")}>{b.display}</span></div>);
+        return (<div key={i} className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: b.color }} /><span className="text-xs w-10 shrink-0 truncate" style={{ color: b.color, fontWeight: 700, fontSize: 11 }}>{b.label}</span><div className="flex-1 h-3 bg-white bg-opacity-60 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{ width: w + "%", background: accentColor || b.color, opacity: i === 0 ? 1 : 0.4 }} /></div><span className={"text-xs font-black w-16 text-right shrink-0 " + (i === 0 ? "text-gray-700" : "text-gray-400")}>{b.display}</span></div>);
       })}
       <div className="flex items-center justify-end gap-1 flex-wrap">
         {items.slice(1).map((b, i) => { var pc = pctChange(items[0].value, b.value); return pc != null ? <ChangeBadge key={i} pct={pc} label={"vs" + b.label} /> : null; })}
@@ -370,13 +375,14 @@ function ConvRing({ rate, size = 52, color, strokeW = 5 }) {
   return (<svg width={size} height={size} className="shrink-0"><circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#f3f4f6" strokeWidth={strokeW} /><circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeW} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transform: "rotate(-90deg)", transformOrigin: "center" }} /><text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill={color}>{(rate * 100).toFixed(1)}%</text></svg>);
 }
 
+/* ✅ 改動5b: fontSize 10→11 手機適配 */
 function ConvCompareBars({ items, accentColor }) {
   if (!items || items.length === 0) return null;
   return (
     <div className="space-y-1">
       {items.map((b, i) => {
         var w = Math.max(Math.min(b.value * 100, 100), 2);
-        return (<div key={i} className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: b.color }} /><span className="text-xs w-10 shrink-0 truncate" style={{ color: b.color, fontWeight: 700, fontSize: 10 }}>{b.label}</span><div className="flex-1 h-3 bg-white bg-opacity-60 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{ width: w + "%", background: accentColor || b.color, opacity: i === 0 ? 1 : 0.4 }} /></div><span className={"text-xs font-black w-14 text-right shrink-0 " + (i === 0 ? "text-gray-700" : "text-gray-400")}>{(b.value * 100).toFixed(1)}%</span></div>);
+        return (<div key={i} className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: b.color }} /><span className="text-xs w-10 shrink-0 truncate" style={{ color: b.color, fontWeight: 700, fontSize: 11 }}>{b.label}</span><div className="flex-1 h-3 bg-white bg-opacity-60 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all" style={{ width: w + "%", background: accentColor || b.color, opacity: i === 0 ? 1 : 0.4 }} /></div><span className={"text-xs font-black w-14 text-right shrink-0 " + (i === 0 ? "text-gray-700" : "text-gray-400")}>{(b.value * 100).toFixed(1)}%</span></div>);
       })}
       <div className="flex items-center justify-end gap-1 flex-wrap">
         {items.slice(1).map((b, i) => { var diff = ((items[0].value - b.value) / Math.max(Math.abs(b.value), 0.001)) * 100; return <ChangeBadge key={i} pct={diff} label={"vs" + b.label} />; })}
@@ -671,7 +677,7 @@ function ICPerformanceRanking({ icList, allMonths }) {
                   <div className={"rounded-xl p-2.5 text-center " + (rankBy === "revenue" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💰 帳面數字</div><div className={"text-sm font-black " + (rankBy === "revenue" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.revenue)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.revenue)}</span></div>)}</div>
                   <div className={"rounded-xl p-2.5 text-center " + (rankBy === "perCap" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💵 Per Cap</div><div className={"text-sm font-black " + (rankBy === "perCap" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.perCap)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.perCap)}</span></div>)}</div>
                 </div>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><span>📕 Album {ic.albumSold}</span><span>📗 Storybook {ic.storybookSold}</span><span>🚪 Entry {ic.entry}</span><span>📋 Bookings {ic.bookings}</span></div>
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><span>📕 Album {ic.albumSold}</span><span>📗 Storybook {ic.storybookSold}</span><span>🚪 Entry {ic.entry}</span></div>
               </div>
             </div>
           );
@@ -931,8 +937,9 @@ function PBBBDashboard() {
 
   function renderYoY() {
     var cy = selYear; var ly = selYear - 1; var cyMs = allMonths.filter(d => d.year === cy); var lyMs = allMonths.filter(d => d.year === ly);
+    /* ✅ 改動5c: fontSize 9→10 手機適配 */
     var revenueChart = []; for (var i = 1; i <= 12; i++) { var cM = cyMs.find(d => d.month === i); var lM = lyMs.find(d => d.month === i); revenueChart.push({ name: MONTH_NAMES[i], cur: cM ? cM.revenue : 0, prev: lM ? lM.revenue : 0 }); }
-    return (<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📈 YoY 比較</h2><select value={selYear} onChange={e => handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y => <option key={y} value={y}>{y}年</option>)}</select></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">💰 月營收 YoY ({cy} vs {ly})</div><ResponsiveContainer width="100%" height={220}><LineChart data={revenueChart}><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" /><XAxis dataKey="name" tick={{ fontSize: 9 }} /><YAxis tick={{ fontSize: 10 }} tickFormatter={v => Math.round(v / 1000) + "k"} /><Tooltip formatter={v => ["$" + v.toLocaleString()]} /><Legend /><Line type="monotone" dataKey="cur" name={String(cy)} stroke="#f43f5e" strokeWidth={2.5} dot={{ r: 3, fill: "#f43f5e" }} /><Line type="monotone" dataKey="prev" name={String(ly)} stroke="#fda4af" strokeWidth={2} dot={{ r: 2.5, fill: "#fda4af" }} strokeDasharray="6 3" /></LineChart></ResponsiveContainer></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📋 逐月對比</div><table className="w-full text-xs"><thead><tr className="bg-gray-50"><th className="p-2 text-left">月</th><th className="p-2 text-right">{cy}</th><th className="p-2 text-right">{ly}</th><th className="p-2 text-right">變化</th></tr></thead><tbody>{Array.from({ length: 12 }, (_, i) => { var m = i + 1; var cM2 = cyMs.find(d => d.month === m); var lM2 = lyMs.find(d => d.month === m); return (<tr key={m} className="border-t border-gray-100"><td className="p-2 font-bold">{MONTH_NAMES[m]}</td><td className="p-2 text-right">{cM2 ? formatMoney(cM2.revenue) : "—"}</td><td className="p-2 text-right">{lM2 ? formatMoney(lM2.revenue) : "—"}</td><td className="p-2 text-right">{cM2 && lM2 ? <MomBadge current={cM2.revenue} previous={lM2.revenue} /> : "—"}</td></tr>); })}</tbody></table></div></div>);
+    return (<div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">📈 YoY 比較</h2><select value={selYear} onChange={e => handleYearChange(parseInt(e.target.value))} className="border-2 border-pink-200 rounded-xl px-3 py-2 text-sm font-bold bg-pink-50">{availableYears.map(y => <option key={y} value={y}>{y}年</option>)}</select></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">💰 月營收 YoY ({cy} vs {ly})</div><ResponsiveContainer width="100%" height={220}><LineChart data={revenueChart}><CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} tickFormatter={v => Math.round(v / 1000) + "k"} /><Tooltip formatter={v => ["$" + v.toLocaleString()]} /><Legend /><Line type="monotone" dataKey="cur" name={String(cy)} stroke="#f43f5e" strokeWidth={2.5} dot={{ r: 3, fill: "#f43f5e" }} /><Line type="monotone" dataKey="prev" name={String(ly)} stroke="#fda4af" strokeWidth={2} dot={{ r: 2.5, fill: "#fda4af" }} strokeDasharray="6 3" /></LineChart></ResponsiveContainer></div><div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"><div className="font-bold text-sm text-gray-700 mb-3">📋 逐月對比</div><table className="w-full text-xs"><thead><tr className="bg-gray-50"><th className="p-2 text-left">月</th><th className="p-2 text-right">{cy}</th><th className="p-2 text-right">{ly}</th><th className="p-2 text-right">變化</th></tr></thead><tbody>{Array.from({ length: 12 }, (_, i) => { var m = i + 1; var cM2 = cyMs.find(d => d.month === m); var lM2 = lyMs.find(d => d.month === m); return (<tr key={m} className="border-t border-gray-100"><td className="p-2 font-bold">{MONTH_NAMES[m]}</td><td className="p-2 text-right">{cM2 ? formatMoney(cM2.revenue) : "—"}</td><td className="p-2 text-right">{lM2 ? formatMoney(lM2.revenue) : "—"}</td><td className="p-2 text-right">{cM2 && lM2 ? <MomBadge current={cM2.revenue} previous={lM2.revenue} /> : "—"}</td></tr>); })}</tbody></table></div></div>);
   }
 
   function renderSettings() {
