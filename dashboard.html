@@ -1,12 +1,60 @@
-import React, { useState, useMemo } from "react";
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  AreaChart, Area
-} from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Trophy, X, MessageSquare, Lock, Unlock, Shield, Eye, EyeOff } from "lucide-react";
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BB Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
+  <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .motion-transition { transition: all 0.3s ease; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+
+/* ═══════ Shims：motion / AnimatePresence / lucide icons ═══════ */
+function createMotionComponent(tag) {
+  return function MotionComp(props) {
+    var { initial, animate, exit, transition, whileHover, whileTap, layout, style, ...rest } = props;
+    var s = Object.assign({}, style, { transition: "all 0.3s ease" });
+    if (animate && typeof animate === "object" && !Array.isArray(animate)) {
+      if (typeof animate.opacity === "number") s.opacity = animate.opacity;
+      if (animate.width !== undefined) s.width = animate.width;
+      if (animate.height !== undefined) s.height = animate.height;
+      var transforms = [];
+      if (typeof animate.y === "number") transforms.push("translateY(" + animate.y + "px)");
+      if (typeof animate.x === "number") transforms.push("translateX(" + animate.x + "px)");
+      if (typeof animate.rotate === "number") transforms.push("rotate(" + animate.rotate + "deg)");
+      if (transforms.length > 0) s.transform = transforms.join(" ");
+    }
+    return React.createElement(tag, Object.assign({}, rest, { style: s }));
+  };
+}
+var motion = { div: createMotionComponent("div"), span: createMotionComponent("span") };
+function AnimatePresence({ children }) { return children; }
+
+function ChevronDown({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>; }
+function Trophy({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>; }
+function X({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
+function MessageSquare({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>; }
+function Lock({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>; }
+function Unlock({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>; }
+function Shield({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>; }
+function Eye({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>; }
+function EyeOff({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>; }
+
+/* ═══════ Destructure from globals ═══════ */
+var { useState, useMemo } = React;
+var { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area } = Recharts;
+
+/* ═══════ 以下係你原本嘅 code（只移除咗 import/export）═══════ */
 
 const MONTH_NAMES = ["", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 const SEASON_FACTOR = [0.75, 0.8, 0.95, 1.05, 1, 0.9, 1.15, 1.1, 1, 0.95, 0.85, 1.25];
@@ -378,7 +426,7 @@ function RankingPanel({ staffList, allMonths, selYear, selMon, onClose }) {
   var medalColors = ["#f59e0b", "#94a3b8", "#cd7f32"];
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.4)" }} onClick={onClose}>
-      <motion.div initial={{ y: 600 }} animate={{ y: 0 }} exit={{ y: 600 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} onClick={e => e.stopPropagation()} className="bg-white rounded-t-3xl w-full max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
+      <motion.div initial={{ y: 600 }} animate={{ y: 0 }} exit={{ y: 600 }} onClick={e => e.stopPropagation()} className="bg-white rounded-t-3xl w-full max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white z-10 px-5 pt-5 pb-3 border-b border-gray-100">
           <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><Trophy className="w-5 h-5 text-amber-500" /><span className="text-lg font-black text-gray-800">同事表現排行</span></div><button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X className="w-4 h-4 text-gray-500" /></button></div>
           <div className="text-xs text-gray-400 mb-3">{selYear}年{MONTH_NAMES[selMon]}</div>
@@ -395,7 +443,7 @@ function RankingPanel({ staffList, allMonths, selYear, selMon, onClose }) {
                 <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: i < 3 ? medalColors[i] + "20" : "#f3f4f6" }}>{i < 3 ? <span className="text-base">{["🥇", "🥈", "🥉"][i]}</span> : <span className="text-xs font-black text-gray-400">{i + 1}</span>}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5"><span className={"text-sm font-bold " + (i === 0 ? "text-rose-700" : "text-gray-700")}>{r.name}</span><div className="flex items-center gap-1.5"><span className={"text-base font-black " + (i === 0 ? "text-rose-600" : "text-gray-700")}>{display}</span>{sc && <span className={"text-xs font-bold px-1.5 py-0.5 rounded-full " + sc.bg + " " + sc.text}>{sc.label}</span>}</div></div>
-                  <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: barW + "%" }} transition={{ duration: 0.6, delay: i * 0.08 }} className="h-full rounded-full" style={{ background: i === 0 ? "#f43f5e" : i === 1 ? "#fb7185" : i === 2 ? "#fda4af" : "#e5e7eb" }} /></div>
+                  <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: barW + "%" }} className="h-full rounded-full" style={{ background: i === 0 ? "#f43f5e" : i === 1 ? "#fb7185" : i === 2 ? "#fda4af" : "#e5e7eb" }} /></div>
                   <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400"><span>⭐ {r.avg}</span><span>💵 {formatMoney(r.perCap)}</span><span>📈 {formatPct(r.convRate)}</span></div>
                 </div>
               </div>
@@ -464,7 +512,7 @@ function PkgAlbumDetail({ pkgName, theme, albumVal, albumPrevQ, albumYoY, storyb
     return items;
   }
   return (
-    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
       <div className={theme.bg + " px-4 py-4 space-y-3 border-t " + theme.border}>
         {isRoyal && (<div className="bg-white bg-opacity-80 rounded-xl p-3 border border-rose-100 flex items-center gap-2.5"><span className="text-xl">👸</span><div><div className="text-xs font-bold text-rose-600">Royal Package 自動包含</div><div className="text-xs text-gray-500 leading-relaxed mt-0.5">每位入場客人自動獲得一本 Album 或 Storybook</div></div></div>)}
         {!isRoyal && (
@@ -569,98 +617,32 @@ function DetailCard({ icon, label, value, accent, bars }) {
   );
 }
 
-/* ═══════ IC Performance Ranking (Business Metrics) ═══════ */
 function ICPerformanceRanking({ icList, allMonths }) {
   var [icPeriod, setICPeriod] = useState("month");
   var [rankBy, setRankBy] = useState("convRate");
   var [icYear, setICYear] = useState(2026);
   var [icMon, setICMon] = useState(9);
-
-  var availableYears = useMemo(() => {
-    var s = {}; allMonths.forEach(d => { s[d.year] = true; }); return Object.keys(s).map(Number).sort((a, b) => b - a);
-  }, [allMonths]);
-
-  var monthsForICYear = useMemo(() => {
-    return allMonths.filter(d => d.year === icYear).map(d => d.month).sort((a, b) => a - b);
-  }, [allMonths, icYear]);
-
-  function handleICYearChange(ny) {
-    setICYear(ny);
-    var av = allMonths.filter(d => d.year === ny).map(d => d.month);
-    if (av.indexOf(icMon) === -1) setICMon(av[av.length - 1] || 1);
-  }
-
-  var icData = useMemo(() => {
-    if (icPeriod === "month") {
-      return generateICBizData(icList, icYear, icMon);
-    } else {
-      return generateICYearData(icList, icYear);
-    }
-  }, [icList, icYear, icMon, icPeriod]);
-
-  var prevICData = useMemo(() => {
-    if (icPeriod === "month") {
-      var pm = icMon === 1 ? 12 : icMon - 1;
-      var py = icMon === 1 ? icYear - 1 : icYear;
-      return generateICBizData(icList, py, pm);
-    } else {
-      return generateICYearData(icList, icYear - 1);
-    }
-  }, [icList, icYear, icMon, icPeriod]);
-
-  var ranked = useMemo(() => {
-    var sorted = [...icData].sort((a, b) => {
-      if (rankBy === "convRate") return b.convRate - a.convRate;
-      if (rankBy === "revenue") return b.revenue - a.revenue;
-      return b.perCap - a.perCap;
-    });
-    return sorted;
-  }, [icData, rankBy]);
-
+  var availableYears = useMemo(() => { var s = {}; allMonths.forEach(d => { s[d.year] = true; }); return Object.keys(s).map(Number).sort((a, b) => b - a); }, [allMonths]);
+  var monthsForICYear = useMemo(() => { return allMonths.filter(d => d.year === icYear).map(d => d.month).sort((a, b) => a - b); }, [allMonths, icYear]);
+  function handleICYearChange(ny) { setICYear(ny); var av = allMonths.filter(d => d.year === ny).map(d => d.month); if (av.indexOf(icMon) === -1) setICMon(av[av.length - 1] || 1); }
+  var icData = useMemo(() => { if (icPeriod === "month") { return generateICBizData(icList, icYear, icMon); } else { return generateICYearData(icList, icYear); } }, [icList, icYear, icMon, icPeriod]);
+  var prevICData = useMemo(() => { if (icPeriod === "month") { var pm = icMon === 1 ? 12 : icMon - 1; var py = icMon === 1 ? icYear - 1 : icYear; return generateICBizData(icList, py, pm); } else { return generateICYearData(icList, icYear - 1); } }, [icList, icYear, icMon, icPeriod]);
+  var ranked = useMemo(() => { var sorted = [...icData].sort((a, b) => { if (rankBy === "convRate") return b.convRate - a.convRate; if (rankBy === "revenue") return b.revenue - a.revenue; return b.perCap - a.perCap; }); return sorted; }, [icData, rankBy]);
   var medalColors = ["#f59e0b", "#94a3b8", "#cd7f32"];
   var periodLabel = icPeriod === "month" ? icYear + "年" + MONTH_NAMES[icMon] : icYear + "年 全年";
   var prevLabel = icPeriod === "month" ? "上月" : "上年";
-
   var dropdownStyle = "border-2 border-violet-200 rounded-xl px-3 py-2 text-sm font-bold bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-300 appearance-none";
-
   if (icList.length === 0) return (<div className="bg-gray-50 rounded-2xl p-8 text-center border-2 border-dashed border-gray-200"><div className="text-3xl mb-2">👤</div><div className="text-sm text-gray-400">未有 IC 名單，請先新增</div></div>);
-
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-200">
-        <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-violet-200 flex items-center justify-center"><Shield className="w-4 h-4 text-violet-600" /></div><div><div className="text-sm font-black text-violet-700">🏆 IC 表現排名</div><div className="text-xs text-violet-400">僅你可見</div></div></div>
-      </div>
+      <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-200"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-violet-200 flex items-center justify-center"><Shield className="w-4 h-4 text-violet-600" /></div><div><div className="text-sm font-black text-violet-700">🏆 IC 表現排名</div><div className="text-xs text-violet-400">僅你可見</div></div></div></div>
       <div className="px-4 pt-3 space-y-2.5">
-        {/* Period type + Dropdowns row */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl shrink-0">
-            {[{ key: "month", label: "📅 月" }, { key: "year", label: "📆 年" }].map(t => (
-              <button key={t.key} onClick={() => setICPeriod(t.key)} className={icPeriod === t.key ? "px-3 py-2 rounded-lg text-xs font-bold bg-white text-violet-600 shadow-sm" : "px-3 py-2 rounded-lg text-xs font-bold text-gray-400"}>{t.label}</button>
-            ))}
-          </div>
-          <div className="flex gap-2 items-center flex-1 justify-end">
-            <select value={icYear} onChange={e => handleICYearChange(parseInt(e.target.value))} className={dropdownStyle}>
-              {availableYears.map(y => <option key={y} value={y}>{y}年</option>)}
-            </select>
-            {icPeriod === "month" && (
-              <select value={icMon} onChange={e => setICMon(parseInt(e.target.value))} className={dropdownStyle}>
-                {monthsForICYear.map(m => <option key={m} value={m}>{m}月</option>)}
-              </select>
-            )}
-          </div>
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl shrink-0">{[{ key: "month", label: "📅 月" }, { key: "year", label: "📆 年" }].map(t => (<button key={t.key} onClick={() => setICPeriod(t.key)} className={icPeriod === t.key ? "px-3 py-2 rounded-lg text-xs font-bold bg-white text-violet-600 shadow-sm" : "px-3 py-2 rounded-lg text-xs font-bold text-gray-400"}>{t.label}</button>))}</div>
+          <div className="flex gap-2 items-center flex-1 justify-end"><select value={icYear} onChange={e => handleICYearChange(parseInt(e.target.value))} className={dropdownStyle}>{availableYears.map(y => <option key={y} value={y}>{y}年</option>)}</select>{icPeriod === "month" && (<select value={icMon} onChange={e => setICMon(parseInt(e.target.value))} className={dropdownStyle}>{monthsForICYear.map(m => <option key={m} value={m}>{m}月</option>)}</select>)}</div>
         </div>
-        {/* Period label badge */}
-        <div className="text-xs font-bold text-violet-500 bg-violet-50 rounded-lg px-3 py-2 border border-violet-200 flex items-center gap-2">
-          📅 {periodLabel}
-          <span className="text-violet-300">|</span>
-          <span className="text-violet-400">對比：{prevLabel}</span>
-        </div>
-        {/* Rank by selector */}
-        <div className="flex gap-1.5 bg-violet-50 p-1 rounded-xl">
-          {[{ key: "convRate", label: "📈 相簿轉化率" }, { key: "revenue", label: "💰 帳面數字" }, { key: "perCap", label: "💵 Per Cap" }].map(t => (
-            <button key={t.key} onClick={() => setRankBy(t.key)} className={rankBy === t.key ? "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-violet-600 shadow-sm" : "flex-1 py-2 rounded-lg text-xs font-bold text-violet-300"}>{t.label}</button>
-          ))}
-        </div>
+        <div className="text-xs font-bold text-violet-500 bg-violet-50 rounded-lg px-3 py-2 border border-violet-200 flex items-center gap-2">📅 {periodLabel}<span className="text-violet-300">|</span><span className="text-violet-400">對比：{prevLabel}</span></div>
+        <div className="flex gap-1.5 bg-violet-50 p-1 rounded-xl">{[{ key: "convRate", label: "📈 相簿轉化率" }, { key: "revenue", label: "💰 帳面數字" }, { key: "perCap", label: "💵 Per Cap" }].map(t => (<button key={t.key} onClick={() => setRankBy(t.key)} className={rankBy === t.key ? "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-violet-600 shadow-sm" : "flex-1 py-2 rounded-lg text-xs font-bold text-violet-300"}>{t.label}</button>))}</div>
       </div>
       <div className="px-4 py-4 space-y-3">
         {ranked.map((ic, i) => {
@@ -672,56 +654,24 @@ function ICPerformanceRanking({ icList, allMonths }) {
           var maxRev = Math.max(...ranked.map(r => r.revenue), 1);
           var maxPC = Math.max(...ranked.map(r => r.perCap), 1);
           var barW = rankBy === "convRate" ? Math.max((ic.convRate / maxConv) * 100, 5) : rankBy === "revenue" ? Math.max((ic.revenue / maxRev) * 100, 5) : Math.max((ic.perCap / maxPC) * 100, 5);
-
           return (
             <div key={ic.name} className={"rounded-2xl border-2 overflow-hidden transition-all " + (i === 0 ? "border-violet-300 shadow-md" : "border-gray-200")}>
               <div className={"px-4 py-3 " + (i === 0 ? "bg-gradient-to-r from-violet-50 to-purple-50" : "bg-gray-50")}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: i < 3 ? medalColors[i] + "20" : "#f3f4f6" }}>
-                    {i < 3 ? <span className="text-xl">{["🥇", "🥈", "🥉"][i]}</span> : <span className="text-sm font-black text-gray-400">{i + 1}</span>}
-                  </div>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: i < 3 ? medalColors[i] + "20" : "#f3f4f6" }}>{i < 3 ? <span className="text-xl">{["🥇", "🥈", "🥉"][i]}</span> : <span className="text-sm font-black text-gray-400">{i + 1}</span>}</div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={"text-base font-black " + (i === 0 ? "text-violet-700" : "text-gray-700")}>{ic.name}</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className={"text-lg font-black " + (i === 0 ? "text-violet-600" : "text-gray-700")}>{mainDisplay}</span>
-                        {prevMainVal != null && prevMainVal > 0 && (() => {
-                          var pc = rankBy === "convRate" ? ((ic.convRate - prevIC.convRate) / Math.max(Math.abs(prevIC.convRate), 0.001)) * 100 : pctChange(mainVal, prevMainVal);
-                          return <ChangeBadge pct={pc} />;
-                        })()}
-                      </div>
-                    </div>
-                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
-                      <motion.div initial={{ width: 0 }} animate={{ width: barW + "%" }} transition={{ duration: 0.6, delay: i * 0.1 }} className="h-full rounded-full" style={{ background: i === 0 ? "#7c3aed" : i === 1 ? "#a78bfa" : i === 2 ? "#c4b5fd" : "#d1d5db" }} />
-                    </div>
+                    <div className="flex items-center justify-between mb-1"><span className={"text-base font-black " + (i === 0 ? "text-violet-700" : "text-gray-700")}>{ic.name}</span><div className="flex items-center gap-1.5"><span className={"text-lg font-black " + (i === 0 ? "text-violet-600" : "text-gray-700")}>{mainDisplay}</span>{prevMainVal != null && prevMainVal > 0 && (() => { var pc = rankBy === "convRate" ? ((ic.convRate - prevIC.convRate) / Math.max(Math.abs(prevIC.convRate), 0.001)) * 100 : pctChange(mainVal, prevMainVal); return <ChangeBadge pct={pc} />; })()}</div></div>
+                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-2"><motion.div initial={{ width: 0 }} animate={{ width: barW + "%" }} className="h-full rounded-full" style={{ background: i === 0 ? "#7c3aed" : i === 1 ? "#a78bfa" : i === 2 ? "#c4b5fd" : "#d1d5db" }} /></div>
                   </div>
                 </div>
               </div>
               <div className="px-4 py-3 bg-white">
                 <div className="grid grid-cols-3 gap-2">
-                  <div className={"rounded-xl p-2.5 text-center " + (rankBy === "convRate" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}>
-                    <div className="text-xs text-gray-400 mb-0.5">📈 相簿轉化率</div>
-                    <div className={"text-sm font-black " + (rankBy === "convRate" ? "text-violet-600" : "text-gray-700")}>{formatPct(ic.convRate)}</div>
-                    {prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatPct(prevIC.convRate)}</span></div>)}
-                    <div className="text-xs text-gray-300 mt-0.5">{ic.totalBookSold} / {ic.entry} 組</div>
-                  </div>
-                  <div className={"rounded-xl p-2.5 text-center " + (rankBy === "revenue" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}>
-                    <div className="text-xs text-gray-400 mb-0.5">💰 帳面數字</div>
-                    <div className={"text-sm font-black " + (rankBy === "revenue" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.revenue)}</div>
-                    {prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.revenue)}</span></div>)}
-                  </div>
-                  <div className={"rounded-xl p-2.5 text-center " + (rankBy === "perCap" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}>
-                    <div className="text-xs text-gray-400 mb-0.5">💵 Per Cap</div>
-                    <div className={"text-sm font-black " + (rankBy === "perCap" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.perCap)}</div>
-                    {prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.perCap)}</span></div>)}
-                  </div>
+                  <div className={"rounded-xl p-2.5 text-center " + (rankBy === "convRate" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">📈 相簿轉化率</div><div className={"text-sm font-black " + (rankBy === "convRate" ? "text-violet-600" : "text-gray-700")}>{formatPct(ic.convRate)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatPct(prevIC.convRate)}</span></div>)}<div className="text-xs text-gray-300 mt-0.5">{ic.totalBookSold} / {ic.entry} 組</div></div>
+                  <div className={"rounded-xl p-2.5 text-center " + (rankBy === "revenue" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💰 帳面數字</div><div className={"text-sm font-black " + (rankBy === "revenue" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.revenue)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.revenue)}</span></div>)}</div>
+                  <div className={"rounded-xl p-2.5 text-center " + (rankBy === "perCap" ? "bg-violet-50 border-2 border-violet-200" : "bg-gray-50")}><div className="text-xs text-gray-400 mb-0.5">💵 Per Cap</div><div className={"text-sm font-black " + (rankBy === "perCap" ? "text-violet-600" : "text-gray-700")}>{formatMoney(ic.perCap)}</div>{prevIC && (<div className="mt-0.5"><span className="text-xs text-gray-300">{prevLabel} {formatMoney(prevIC.perCap)}</span></div>)}</div>
                 </div>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
-                  <span>📕 Album {ic.albumSold}</span>
-                  <span>📗 Storybook {ic.storybookSold}</span>
-                  <span>🚪 Entry {ic.entry}</span>
-                  <span>📋 Bookings {ic.bookings}</span>
-                </div>
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><span>📕 Album {ic.albumSold}</span><span>📗 Storybook {ic.storybookSold}</span><span>🚪 Entry {ic.entry}</span><span>📋 Bookings {ic.bookings}</span></div>
               </div>
             </div>
           );
@@ -731,22 +681,15 @@ function ICPerformanceRanking({ icList, allMonths }) {
   );
 }
 
-/* ═══════ Password Gate ═══════ */
 function PasswordGate({ onUnlock }) {
   var [pw, setPw] = useState("");
   var [showPw, setShowPw] = useState(false);
   var [error, setError] = useState(false);
   var [shake, setShake] = useState(false);
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (pw === SETTINGS_PW) { onUnlock(); }
-    else { setError(true); setShake(true); setTimeout(() => setShake(false), 500); setTimeout(() => setError(false), 2000); }
-  }
-
+  function handleSubmit(e) { e.preventDefault(); if (pw === SETTINGS_PW) { onUnlock(); } else { setError(true); setShake(true); setTimeout(() => setShake(false), 500); setTimeout(() => setError(false), 2000); } }
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6">
-      <motion.div animate={shake ? { x: [-12, 12, -8, 8, -4, 4, 0] } : {}} transition={{ duration: 0.5 }} className="w-full max-w-sm">
+      <motion.div animate={shake ? { x: 0 } : {}} className="w-full max-w-sm">
         <div className="bg-white rounded-3xl shadow-lg border-2 border-gray-200 p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-5"><Lock className="w-7 h-7 text-gray-500" /></div>
           <h3 className="text-lg font-black text-gray-700 mb-1">需要密碼</h3>
@@ -756,7 +699,7 @@ function PasswordGate({ onUnlock }) {
               <input type={showPw ? "text" : "password"} value={pw} onChange={e => { setPw(e.target.value); setError(false); }} placeholder="輸入密碼..." className={"w-full border-2 rounded-xl px-4 py-3.5 pr-12 text-center text-lg font-bold tracking-widest focus:outline-none focus:ring-2 transition-all " + (error ? "border-red-400 bg-red-50 focus:ring-red-300 text-red-600" : "border-gray-200 bg-gray-50 focus:ring-rose-300 focus:border-rose-300")} autoFocus />
               <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button>
             </div>
-            <AnimatePresence>{error && (<motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-sm text-red-500 font-bold mb-3">❌ 密碼錯誤，請重試</motion.div>)}</AnimatePresence>
+            {error && (<div className="text-sm text-red-500 font-bold mb-3">❌ 密碼錯誤，請重試</div>)}
             <button type="submit" className="w-full bg-gradient-to-r from-rose-400 to-pink-400 text-white font-bold py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all text-sm"><div className="flex items-center justify-center gap-2"><Unlock className="w-4 h-4" /><span>解鎖設定</span></div></button>
           </form>
         </div>
@@ -765,7 +708,7 @@ function PasswordGate({ onUnlock }) {
   );
 }
 
-export default function PBBBDashboard() {
+function PBBBDashboard() {
   var [activeTab, setActiveTab] = useState("overview");
   var [staffList, setStaffList] = useState(INITIAL_STAFF);
   var [icList, setICList] = useState(INITIAL_ICS);
@@ -925,7 +868,7 @@ export default function PBBBDashboard() {
           <div className="p-4"><div className="flex items-center gap-2 mb-1"><span className="text-xl">📊</span><span className="text-sm font-bold text-gray-500">Bookings — Package 分佈</span></div><div className="text-2xl font-black text-gray-800">{formatNum(cur.bookings)} 組</div><div className="text-xs text-gray-400 mt-1">點擊展開明細</div></div>
           <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 bg-opacity-50">
             <div className="flex items-center justify-between mb-3"><div className="text-xs font-bold text-gray-500">Package 分佈</div><PeriodLegend dd={dd} /></div>
-            <div className="space-y-3">{pkgDefs.map(p => { var curEntry = cur[p.entryKey]; var pct = totalPkg > 0 ? (curEntry / totalPkg * 100).toFixed(1) : "0"; var prevQEntry = prevQ ? prevQ[p.entryKey] : null; var yoyEntry = yoy ? yoy[p.entryKey] : null; var isExpanded = !!expandedPkgs[p.name]; var albumVal, albumPrevQ, albumYoY, sbVal, sbPrevQ, sbYoY, crownExtra; if (p.name === "Crown") { albumVal = cur.crownAlbum1980 + cur.crownAlbum1438; albumPrevQ = prevQ ? prevQ.crownAlbum1980 + prevQ.crownAlbum1438 : null; albumYoY = yoy ? yoy.crownAlbum1980 + yoy.crownAlbum1438 : null; sbVal = 0; sbPrevQ = null; sbYoY = null; crownExtra = { a1980: cur.crownAlbum1980, a1438: cur.crownAlbum1438, a1980PrevQ: prevQ ? prevQ.crownAlbum1980 : null, a1438PrevQ: prevQ ? prevQ.crownAlbum1438 : null, a1980YoY: yoy ? yoy.crownAlbum1980 : null, a1438YoY: yoy ? yoy.crownAlbum1438 : null }; } else { albumVal = cur[p.albumKey]; albumPrevQ = prevQ ? prevQ[p.albumKey] : null; albumYoY = yoy ? yoy[p.albumKey] : null; sbVal = cur[p.sbKey]; sbPrevQ = prevQ ? prevQ[p.sbKey] : null; sbYoY = yoy ? yoy[p.sbKey] : null; crownExtra = null; } var totalSold = albumVal + (p.hasSB ? sbVal : 0); var headerConv = !p.isRoyal && curEntry > 0 ? totalSold / curEntry : null; var miniBars = [{ label: dd.periodWord, value: curEntry, display: curEntry + " 組", color: CUR_COLOR }]; if (prevQ && prevQEntry != null) miniBars.push({ label: dd.prevQWord, value: prevQEntry, display: prevQEntry + " 組", color: PREVQ_COLOR }); if (yoy && yoyEntry != null) miniBars.push({ label: dd.yoyWord, value: yoyEntry, display: yoyEntry + " 組", color: YOY_COLOR }); return (<div key={p.name} className={"rounded-2xl overflow-hidden border-2 transition-all " + (isExpanded ? p.theme.border + " shadow-md" : p.theme.border + " shadow-sm")}><button onClick={() => togglePkg(p.name)} className={"w-full text-left " + p.theme.bg + " px-4 py-3 transition-all hover:opacity-90"}><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ background: p.color }} /><span className={"text-sm font-black " + p.theme.text}>{p.icon} {p.name}</span><span className={"text-xs font-bold px-2 py-0.5 rounded-full " + p.theme.badgeBg + " " + p.theme.badgeText}>{pct}%</span>{headerConv != null && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white bg-opacity-80 text-gray-600">轉化 {(headerConv * 100).toFixed(1)}%</span>}</div><div className="flex items-center gap-3"><div className="text-right"><span className="text-base font-black text-gray-800">{curEntry} 組</span></div><motion.span animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-gray-400 text-sm">▼</motion.span></div></div><MiniCompareBars items={miniBars} accentColor={p.color} /></button><AnimatePresence>{isExpanded && <PkgAlbumDetail pkgName={p.name} theme={p.theme} dd={ddWithRefs} albumVal={albumVal} albumPrevQ={albumPrevQ} albumYoY={albumYoY} storybookVal={sbVal} storybookPrevQ={sbPrevQ} storybookYoY={sbYoY} entryVal={curEntry} entryPrevQ={prevQEntry} entryYoY={yoyEntry} hasSB={p.hasSB} crownExtra={crownExtra} isRoyal={p.isRoyal} />}</AnimatePresence></div>); })}</div>
+            <div className="space-y-3">{pkgDefs.map(p => { var curEntry = cur[p.entryKey]; var pct = totalPkg > 0 ? (curEntry / totalPkg * 100).toFixed(1) : "0"; var prevQEntry = prevQ ? prevQ[p.entryKey] : null; var yoyEntry = yoy ? yoy[p.entryKey] : null; var isExpanded = !!expandedPkgs[p.name]; var albumVal, albumPrevQ, albumYoY, sbVal, sbPrevQ, sbYoY, crownExtra; if (p.name === "Crown") { albumVal = cur.crownAlbum1980 + cur.crownAlbum1438; albumPrevQ = prevQ ? prevQ.crownAlbum1980 + prevQ.crownAlbum1438 : null; albumYoY = yoy ? yoy.crownAlbum1980 + yoy.crownAlbum1438 : null; sbVal = 0; sbPrevQ = null; sbYoY = null; crownExtra = { a1980: cur.crownAlbum1980, a1438: cur.crownAlbum1438, a1980PrevQ: prevQ ? prevQ.crownAlbum1980 : null, a1438PrevQ: prevQ ? prevQ.crownAlbum1438 : null, a1980YoY: yoy ? yoy.crownAlbum1980 : null, a1438YoY: yoy ? yoy.crownAlbum1438 : null }; } else { albumVal = cur[p.albumKey]; albumPrevQ = prevQ ? prevQ[p.albumKey] : null; albumYoY = yoy ? yoy[p.albumKey] : null; sbVal = cur[p.sbKey]; sbPrevQ = prevQ ? prevQ[p.sbKey] : null; sbYoY = yoy ? yoy[p.sbKey] : null; crownExtra = null; } var totalSold = albumVal + (p.hasSB ? sbVal : 0); var headerConv = !p.isRoyal && curEntry > 0 ? totalSold / curEntry : null; var miniBars = [{ label: dd.periodWord, value: curEntry, display: curEntry + " 組", color: CUR_COLOR }]; if (prevQ && prevQEntry != null) miniBars.push({ label: dd.prevQWord, value: prevQEntry, display: prevQEntry + " 組", color: PREVQ_COLOR }); if (yoy && yoyEntry != null) miniBars.push({ label: dd.yoyWord, value: yoyEntry, display: yoyEntry + " 組", color: YOY_COLOR }); return (<div key={p.name} className={"rounded-2xl overflow-hidden border-2 transition-all " + (isExpanded ? p.theme.border + " shadow-md" : p.theme.border + " shadow-sm")}><button onClick={() => togglePkg(p.name)} className={"w-full text-left " + p.theme.bg + " px-4 py-3 transition-all hover:opacity-90"}><div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ background: p.color }} /><span className={"text-sm font-black " + p.theme.text}>{p.icon} {p.name}</span><span className={"text-xs font-bold px-2 py-0.5 rounded-full " + p.theme.badgeBg + " " + p.theme.badgeText}>{pct}%</span>{headerConv != null && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white bg-opacity-80 text-gray-600">轉化 {(headerConv * 100).toFixed(1)}%</span>}</div><div className="flex items-center gap-3"><div className="text-right"><span className="text-base font-black text-gray-800">{curEntry} 組</span></div><motion.span animate={{ rotate: isExpanded ? 180 : 0 }} className="text-gray-400 text-sm">▼</motion.span></div></div><MiniCompareBars items={miniBars} accentColor={p.color} /></button><AnimatePresence>{isExpanded && <PkgAlbumDetail pkgName={p.name} theme={p.theme} dd={ddWithRefs} albumVal={albumVal} albumPrevQ={albumPrevQ} albumYoY={albumYoY} storybookVal={sbVal} storybookPrevQ={sbPrevQ} storybookYoY={sbYoY} entryVal={curEntry} entryPrevQ={prevQEntry} entryYoY={yoyEntry} hasSB={p.hasSB} crownExtra={crownExtra} isRoyal={p.isRoyal} />}</AnimatePresence></div>); })}</div>
           </div>
         </div>
         <div className="flex items-center gap-3 pt-1"><div className="h-px flex-1 bg-gradient-to-r from-transparent via-teal-200 to-transparent" /><span className="text-xs font-bold text-teal-500 tracking-wider">ADD-ON 加購</span><div className="h-px flex-1 bg-gradient-to-r from-transparent via-teal-200 to-transparent" /></div>
@@ -993,30 +936,21 @@ export default function PBBBDashboard() {
   }
 
   function renderSettings() {
-    if (!settingsUnlocked) {
-      return <PasswordGate onUnlock={() => setSettingsUnlocked(true)} />;
-    }
-
+    if (!settingsUnlocked) { return <PasswordGate onUnlock={() => setSettingsUnlocked(true)} />; }
     return (
       <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-black text-gray-700">⚙️ 設定</h2>
-          <button onClick={() => setSettingsUnlocked(false)} className="flex items-center gap-1.5 text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-all"><Lock className="w-3.5 h-3.5" /><span>鎖定</span></button>
-        </div>
+        <div className="flex items-center justify-between"><h2 className="text-lg font-black text-gray-700">⚙️ 設定</h2><button onClick={() => setSettingsUnlocked(false)} className="flex items-center gap-1.5 text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-all"><Lock className="w-3.5 h-3.5" /><span>鎖定</span></button></div>
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl px-4 py-2.5 border border-emerald-200 flex items-center gap-2"><Unlock className="w-4 h-4 text-emerald-500" /><span className="text-sm font-bold text-emerald-600">已解鎖</span></div>
-
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-4"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center text-white text-sm">👥</div><div><div className="font-bold text-base text-gray-700">同事名單</div><div className="text-xs text-gray-400">{staffList.length} 位同事</div></div></div>
           <div className="space-y-2 mb-3">{staffList.map(name => (<div key={name} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm">{name[0]}</div><span className="font-semibold text-sm">{name}</span></div><button onClick={() => setStaffList(staffList.filter(x => x !== name))} className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-all">✕</button></div>))}</div>
           <div className="flex gap-2"><input value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="新同事名..." className="flex-1 border-2 border-pink-200 rounded-xl px-3 py-2.5 text-sm bg-pink-50 focus:outline-none focus:ring-2 focus:ring-rose-300" onKeyDown={e => { if (e.key === "Enter" && newStaffName.trim()) { setStaffList(staffList.concat([newStaffName.trim()])); setNewStaffName(""); } }} /><button onClick={() => { if (newStaffName.trim()) { setStaffList(staffList.concat([newStaffName.trim()])); setNewStaffName(""); } }} className="bg-gradient-to-r from-rose-400 to-pink-400 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all">+ 加</button></div>
         </div>
-
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-4"><div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-400 to-purple-400 flex items-center justify-center text-white text-sm"><Shield className="w-4 h-4" /></div><div><div className="font-bold text-base text-gray-700">IC 名單</div><div className="text-xs text-gray-400">{icList.length} 位 IC</div></div></div>
           <div className="space-y-2 mb-3">{icList.map(name => (<div key={name} className="flex items-center justify-between bg-violet-50 rounded-xl px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-400 flex items-center justify-center text-white font-bold text-sm">{name[0]}</div><span className="font-semibold text-sm text-violet-700">{name}</span></div><button onClick={() => setICList(icList.filter(x => x !== name))} className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-all">✕</button></div>))}</div>
           <div className="flex gap-2"><input value={newICName} onChange={e => setNewICName(e.target.value)} placeholder="新 IC 名..." className="flex-1 border-2 border-violet-200 rounded-xl px-3 py-2.5 text-sm bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-300" onKeyDown={e => { if (e.key === "Enter" && newICName.trim()) { setICList(icList.concat([newICName.trim()])); setNewICName(""); } }} /><button onClick={() => { if (newICName.trim()) { setICList(icList.concat([newICName.trim()])); setNewICName(""); } }} className="bg-gradient-to-r from-violet-400 to-purple-400 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all">+ 加</button></div>
         </div>
-
         <ICPerformanceRanking icList={icList} allMonths={allMonths} />
       </div>
     );
@@ -1053,3 +987,10 @@ export default function PBBBDashboard() {
     </div>
   );
 }
+
+/* ═══════ Render to DOM ═══════ */
+ReactDOM.createRoot(document.getElementById("root")).render(<PBBBDashboard />);
+
+  </script>
+</body>
+</html>
