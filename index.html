@@ -158,6 +158,7 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <span class="info-tag bg-blue-50 text-blue-600">💼 Sales 3項</span>
       </div>
     </div>
+    <!-- 🔧 FIX 1: Loading banner -->
     <div id="staffLoading" class="loading-banner mb-3">⏳ 正在從 Google Sheet 載入同事名單...</div>
     <div id="staffList"></div>
     <div id="staffDropdownWrap" class="mt-2"><select id="staffDropdown" class="auto-select" onchange="onStaffSelect(this)"><option value="">＋ 揀同事加入...</option></select></div>
@@ -265,46 +266,11 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">🖼️ $130 / 張</span><div class="stepper"><button type="button" onclick="adj('photo130',-1)">−</button><input type="number" inputmode="numeric" id="photo130" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('photo130',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-gray-600">= $<span id="rev_photo">0</span></span></div>
       </div>
-
-      <!-- ═══════════════════════════════════════
-           ✅ 新增：Storybook 運費地區
-           ═══════════════════════════════════════ -->
-      <div class="cat-card border-pink-300" style="background:linear-gradient(135deg,#fdf2f8,#fff0f6)">
-        <div class="flex items-center gap-2 mb-1"><span class="text-xl">📬</span><span class="font-bold text-base text-pink-700">Storybook 運費</span></div>
-        <div class="note mb-3">寄 Storybook 幾本去邊個地區（運費會計入營收）</div>
-        <div class="sale-row">
-          <span class="sale-label">🇭🇰 Hong Kong <span class="text-xs text-gray-400">$250</span></span>
-          <div class="stepper">
-            <button type="button" onclick="adj('sbShipHK',-1)">−</button>
-            <input type="number" inputmode="numeric" id="sbShipHK" min="0" value="0" oninput="recalc()" onfocus="this.select()">
-            <button type="button" onclick="adj('sbShipHK',1)">+</button>
-          </div>
-        </div>
-        <div class="sale-row">
-          <span class="sale-label">🌏 Asia <span class="text-xs text-gray-400">$350</span></span>
-          <div class="stepper">
-            <button type="button" onclick="adj('sbShipAsia',-1)">−</button>
-            <input type="number" inputmode="numeric" id="sbShipAsia" min="0" value="0" oninput="recalc()" onfocus="this.select()">
-            <button type="button" onclick="adj('sbShipAsia',1)">+</button>
-          </div>
-        </div>
-        <div class="sale-row">
-          <span class="sale-label">🌍 International <span class="text-xs text-gray-400">$450</span></span>
-          <div class="stepper">
-            <button type="button" onclick="adj('sbShipIntl',-1)">−</button>
-            <input type="number" inputmode="numeric" id="sbShipIntl" min="0" value="0" oninput="recalc()" onfocus="this.select()">
-            <button type="button" onclick="adj('sbShipIntl',1)">+</button>
-          </div>
-        </div>
-        <div class="flex justify-end mt-1"><span class="text-sm font-bold text-pink-600">= $<span id="rev_shipping">0</span></span></div>
-      </div>
-      <!-- ═══════ END 新增 ═══════ -->
-
     </div>
 
     <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-5 border border-rose-200 mt-3">
       <div class="flex items-center justify-between">
-        <div><div class="text-sm text-gray-500">💰 Total Revenue</div><div id="liveRevenue" class="text-3xl font-black text-rose-600">$0</div><div id="liveShipNote" class="text-xs text-gray-400 hidden">含運費 $<span id="liveShipAmt">0</span></div></div>
+        <div><div class="text-sm text-gray-500">💰 Total Revenue</div><div id="liveRevenue" class="text-3xl font-black text-rose-600">$0</div></div>
         <div class="text-right"><div class="text-sm text-gray-400">已售 Album/Book</div><div id="liveSold" class="text-xl font-black text-emerald-500">0 本</div></div>
       </div>
     </div>
@@ -333,21 +299,22 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
 
 <script>
 /* ══════════ API URL ══════════ */
-var API_URL = 'https://script.google.com/macros/s/AKfycbx9bGA43qOTImiaRNE4y2yDRUUeYT1vX-2cF5LCqUd35upY9981ODEhmjgWXBdWVsIM/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx9bGA43qOTImiaRNE4y2yDRUUeYT1vX-2cF5LCqUd35upY9981ODEhmjgWXBdWVsIM/exec';
 
 /* ══════════ DATA ══════════ */
-var allStaff = [];
-var icList   = [];
+/* 🔧 FIX 1: 改成 let — 頁面載入時會從 Google Sheet 讀取真正名單 */
+let allStaff = [];
+let icList   = [];
 
-var IC_MAX=2;
-var ROLES=['photographer','assistant','sales'];
-var ROLE_LABEL={photographer:'📸 攝影師',assistant:'🤝 Assistant',sales:'💼 Sales'};
-var ROLE_ON_CLASS={photographer:'on-photo',assistant:'on-asst',sales:'on-sales'};
-var ROLE_COLOR={photographer:'#e11d48',assistant:'#b45309',sales:'#1d4ed8'};
-var STAR_LABELS=['','需要改善','未達標','合格','良好','優秀'];
-var STAR_TAG_CLS=['','text-red-600','text-orange-600','text-yellow-700','text-emerald-700','text-teal-700'];
+const IC_MAX=2;
+const ROLES=['photographer','assistant','sales'];
+const ROLE_LABEL={photographer:'📸 攝影師',assistant:'🤝 Assistant',sales:'💼 Sales'};
+const ROLE_ON_CLASS={photographer:'on-photo',assistant:'on-asst',sales:'on-sales'};
+const ROLE_COLOR={photographer:'#e11d48',assistant:'#b45309',sales:'#1d4ed8'};
+const STAR_LABELS=['','需要改善','未達標','合格','良好','優秀'];
+const STAR_TAG_CLS=['','text-red-600','text-orange-600','text-yellow-700','text-emerald-700','text-teal-700'];
 
-var CRITERIA={
+const CRITERIA={
   sales:[
     {key:'upsell',name:'升級銷售力',desc:'有冇成功推動客人 Upgrade 或 Add-on Album，並主動推介加購項目',levels:['','完全無主動推介，等客人自己揀','有提及但無跟進，推介力度不足','有推介 Upgrade / Add-on，做到基本流程','積極推介且自然唔硬銷，成功率高','每組客都主動推，客人開心升級，成功率極高']},
     {key:'proactive',name:'主動性與同步處理能力',desc:'處理多組客人時能安排好、唔顧此失彼；空閒時主動幫團隊',levels:['','只顧自己手頭嘢，多組客時混亂甩漏','有嘗試兼顧但經常顧此失彼','基本兼顧到多組客，空閒時偶爾幫手','安排得好，主動幫整相簿 / 協助 Asst','統籌力強，團隊因佢運作更順暢']},
@@ -366,61 +333,47 @@ var CRITERIA={
   ]
 };
 
-var ENTRY_PKGS=[
+const ENTRY_PKGS=[
   {id:'crownQty',name:'Crown',icon:'👑',bg:'bg-amber-50',bd:'border-amber-200',theme:'theme-amber'},
   {id:'paradeQty',name:'Parade',icon:'🎪',bg:'bg-blue-50',bd:'border-blue-200',theme:'theme-blue'},
   {id:'castleQty',name:'Castle',icon:'🏰',bg:'bg-violet-50',bd:'border-violet-200',theme:'theme-violet'},
   {id:'royalQty',name:'Royal',icon:'👸',bg:'bg-rose-50',bd:'border-rose-200',theme:'theme-rose'}
 ];
 
-/* ═══════════════════════════════════════
-   ✅ 改動 1/6：加 3 個運費 ID 入 reset 清單
-   ═══════════════════════════════════════ */
-var ALL_SALE_IDS=['all1980Alb','all1980Story','crownAlb1980','alb1438','royalAlb1980','royalStory1980','alb1500','story1500','addonAlb','addonStory','rovFull','rovDisc','softcopy','photo168','photo130','sbShipHK','sbShipAsia','sbShipIntl'];
+const ALL_SALE_IDS=['all1980Alb','all1980Story','crownAlb1980','alb1438','royalAlb1980','royalStory1980','alb1500','story1500','addonAlb','addonStory','rovFull','rovDisc','softcopy','photo168','photo130'];
 
 /* ══════════ STATE ══════════ */
-var selectedICs=[],addedStaff=[],staffRoles={},ratings={};
-var $=function(id){return document.getElementById(id)};
-var v=function(id){var el=$(id);return el?parseInt(el.value)||0:0};
-var fmt=function(n){return n.toLocaleString()};
-var pct=function(a,b){return b>0?Math.round(a/b*100)+'%':'—'};
+let selectedICs=[],addedStaff=[],staffRoles={},ratings={};
+const $=id=>document.getElementById(id);
+const v=id=>{const el=$(id);return el?parseInt(el.value)||0:0};
+const fmt=n=>n.toLocaleString();
+const pct=(a,b)=>b>0?Math.round(a/b*100)+'%':'—';
 
+/* ══════════════════════════════════════════
+   🔧 FIX 1: 從 Google Sheet 載入 Staff 名單
+   ══════════════════════════════════════════ */
 function loadStaffFromSheet(){
   var loadingEl = $('staffLoading');
-  fetch(API_URL + '?action=getSettings')
+  fetch(API_URL + '?action=getStaff')
     .then(function(r){ return r.text(); })
     .then(function(text){
-      console.log('📋 Settings API response:', text);
+      console.log('📋 Staff API response:', text);
       var data;
       try { data = JSON.parse(text); } catch(e) { throw new Error('JSON parse failed'); }
       if(data.staff && data.staff.length > 0){
         allStaff = [];
+        icList = [];
         data.staff.forEach(function(name, i){
           allStaff.push({ id: 's'+(i+1), name: name });
-        });
-        console.log('✅ 已載入 ' + allStaff.length + ' 位同事:', allStaff.map(function(s){return s.name;}));
-      } else {
-        console.warn('⚠️ Sheet 無 staff 資料');
-        allStaff = [];
-      }
-      if(data.ic && data.ic.length > 0){
-        icList = [];
-        data.ic.forEach(function(name, i){
           icList.push({ id: 'ic'+(i+1), name: name });
         });
-        console.log('✅ 已載入 ' + icList.length + ' 位 IC:', icList.map(function(s){return s.name;}));
-      } else {
-        icList = allStaff.map(function(s, i){
-          return { id: 'ic'+(i+1), name: s.name };
-        });
-        console.warn('⚠️ Sheet 無獨立 IC 名單，用 Staff 名單做 IC');
-      }
-      if(allStaff.length > 0 || icList.length > 0){
-        if(loadingEl) loadingEl.innerHTML = '✅ 已載入 ' + allStaff.length + ' 位同事 · ' + icList.length + ' 位 IC';
+        console.log('✅ 已載入 ' + allStaff.length + ' 位同事:', allStaff.map(function(s){return s.name;}));
+        if(loadingEl) loadingEl.innerHTML = '✅ 已載入 ' + allStaff.length + ' 位同事';
         setTimeout(function(){ if(loadingEl) loadingEl.style.display='none'; }, 1500);
       } else {
+        console.warn('⚠️ Sheet 無 staff 資料，用 fallback');
         useFallbackStaff();
-        if(loadingEl) loadingEl.innerHTML = '⚠️ Sheet 未有名單資料，用預設名單';
+        if(loadingEl) loadingEl.innerHTML = '⚠️ Sheet 未有同事資料，用預設名單';
       }
       refreshICDD();
       refreshStaffDD();
@@ -440,6 +393,7 @@ function loadStaffFromSheet(){
 }
 
 function useFallbackStaff(){
+  /* Fallback：如果 API 讀唔到就用呢個 */
   var fallback = ['Alice','Bob','Charlie','Diana','Elsa','Fiona'];
   allStaff = fallback.map(function(n,i){ return {id:'s'+(i+1), name:n}; });
   icList   = fallback.map(function(n,i){ return {id:'ic'+(i+1), name:n}; });
@@ -447,64 +401,64 @@ function useFallbackStaff(){
 
 /* ══════════ IC ══════════ */
 function onICSelect(sel){if(!sel.value||selectedICs.length>=IC_MAX)return;selectedICs.push(sel.value);sel.value='';renderICChips();refreshICDD();}
-function removeIC(id){selectedICs=selectedICs.filter(function(x){return x!==id});renderICChips();refreshICDD();}
-function renderICChips(){$('icChipList').innerHTML=selectedICs.map(function(id){var ic=icList.find(function(x){return x.id===id});return'<div class="person-chip"><div class="p-avatar">'+ic.name[0]+'</div><div class="p-name">'+ic.name+'</div><span class="info-tag bg-pink-100 text-pink-600">IC</span><button type="button" class="p-remove" onclick="removeIC(\''+id+'\')">✕</button></div>';}).join('');}
-function refreshICDD(){var avail=icList.filter(function(ic){return selectedICs.indexOf(ic.id)===-1});if(selectedICs.length>=IC_MAX){$('icDropdownWrap').classList.add('hidden');$('icFullHint').classList.remove('hidden');}else{$('icDropdownWrap').classList.remove('hidden');$('icFullHint').classList.add('hidden');$('icDropdown').innerHTML='<option value="">＋ 揀 IC 加入...</option>'+avail.map(function(ic){return'<option value="'+ic.id+'">'+ic.name+'</option>';}).join('');}}
+function removeIC(id){selectedICs=selectedICs.filter(x=>x!==id);renderICChips();refreshICDD();}
+function renderICChips(){$('icChipList').innerHTML=selectedICs.map(id=>{const ic=icList.find(x=>x.id===id);return`<div class="person-chip"><div class="p-avatar">${ic.name[0]}</div><div class="p-name">${ic.name}</div><span class="info-tag bg-pink-100 text-pink-600">IC</span><button type="button" class="p-remove" onclick="removeIC('${id}')">✕</button></div>`;}).join('');}
+function refreshICDD(){const avail=icList.filter(ic=>!selectedICs.includes(ic.id));if(selectedICs.length>=IC_MAX){$('icDropdownWrap').classList.add('hidden');$('icFullHint').classList.remove('hidden');}else{$('icDropdownWrap').classList.remove('hidden');$('icFullHint').classList.add('hidden');$('icDropdown').innerHTML='<option value="">＋ 揀 IC 加入...</option>'+avail.map(ic=>`<option value="${ic.id}">${ic.name}</option>`).join('');}}
 
 /* ══════════ STAFF ══════════ */
-function saveAllRemarks(){addedStaff.forEach(function(sid){var ta=document.querySelector('[data-rmk="'+sid+'"]');if(ta){if(!ratings[sid])ratings[sid]={};ratings[sid]._remarks=ta.value;}});}
+function saveAllRemarks(){addedStaff.forEach(sid=>{const ta=document.querySelector(`[data-rmk="${sid}"]`);if(ta){if(!ratings[sid])ratings[sid]={};ratings[sid]._remarks=ta.value;}});}
 function onStaffSelect(sel){if(!sel.value)return;addedStaff.push(sel.value);staffRoles[sel.value]=new Set();sel.value='';renderStaff();refreshStaffDD();}
-function removeStaff(sid){saveAllRemarks();addedStaff=addedStaff.filter(function(x){return x!==sid});delete staffRoles[sid];delete ratings[sid];renderStaff();refreshStaffDD();}
+function removeStaff(sid){saveAllRemarks();addedStaff=addedStaff.filter(x=>x!==sid);delete staffRoles[sid];delete ratings[sid];renderStaff();refreshStaffDD();}
 function toggleRole(sid,role){saveAllRemarks();if(!staffRoles[sid])return;staffRoles[sid].has(role)?staffRoles[sid].delete(role):staffRoles[sid].add(role);renderStaff();}
 function setRating(sid,key,val){saveAllRemarks();if(!ratings[sid])ratings[sid]={};ratings[sid][key]=(ratings[sid][key]===val)?0:val;renderStaff();}
-function refreshStaffDD(){var avail=allStaff.filter(function(s){return addedStaff.indexOf(s.id)===-1});if(!avail.length){$('staffDropdownWrap').classList.add('hidden');$('allAddedHint').classList.remove('hidden');}else{$('staffDropdownWrap').classList.remove('hidden');$('allAddedHint').classList.add('hidden');$('staffDropdown').innerHTML='<option value="">＋ 揀同事加入...</option>'+avail.map(function(s){return'<option value="'+s.id+'">'+s.name+'</option>';}).join('');}}
+function refreshStaffDD(){const avail=allStaff.filter(s=>!addedStaff.includes(s.id));if(!avail.length){$('staffDropdownWrap').classList.add('hidden');$('allAddedHint').classList.remove('hidden');}else{$('staffDropdownWrap').classList.remove('hidden');$('allAddedHint').classList.add('hidden');$('staffDropdown').innerHTML='<option value="">＋ 揀同事加入...</option>'+avail.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');}}
 
 function renderStaff(){
-  $('staffList').innerHTML=addedStaff.map(function(sid){
-    var s=allStaff.find(function(x){return x.id===sid});
-    var roles=staffRoles[sid]||new Set();
-    var activeRoles=Array.from(roles);
+  $('staffList').innerHTML=addedStaff.map(sid=>{
+    const s=allStaff.find(x=>x.id===sid);
+    const roles=staffRoles[sid]||new Set();
+    const activeRoles=[...roles];
     if(!ratings[sid])ratings[sid]={};
-    var totalC=0,filledC=0;
-    activeRoles.forEach(function(r){(CRITERIA[r]||[]).forEach(function(c){totalC++;if(ratings[sid][r+'_'+c.key]>0)filledC++;});});
-    var pctClass=totalC===0?'empty':filledC===totalC?'done':'partial';
-    var pctText=totalC===0?'未揀崗位':filledC===totalC?'✅ 全部已評':filledC+'/'+totalC+' 已評';
-    var chips=ROLES.map(function(r){return'<div class="role-chip '+(roles.has(r)?ROLE_ON_CLASS[r]:'off')+'" onclick="toggleRole(\''+sid+'\',\''+r+'\')">'+ROLE_LABEL[r]+'</div>';}).join('');
-    var ratingSections='';
+    let totalC=0,filledC=0;
+    activeRoles.forEach(r=>{(CRITERIA[r]||[]).forEach(c=>{totalC++;if(ratings[sid][r+'_'+c.key]>0)filledC++;});});
+    const pctClass=totalC===0?'empty':filledC===totalC?'done':'partial';
+    const pctText=totalC===0?'未揀崗位':filledC===totalC?'✅ 全部已評':`${filledC}/${totalC} 已評`;
+    const chips=ROLES.map(r=>`<div class="role-chip ${roles.has(r)?ROLE_ON_CLASS[r]:'off'}" onclick="toggleRole('${sid}','${r}')">${ROLE_LABEL[r]}</div>`).join('');
+    let ratingSections='';
     if(activeRoles.length>0){
       ratingSections='<div class="rating-body">';
-      activeRoles.forEach(function(role){
-        var criteria=CRITERIA[role]||[];
-        var color=ROLE_COLOR[role];
-        ratingSections+='<div class="role-section"><div class="role-hdr" style="color:'+color+'">'+ROLE_LABEL[role]+'</div>';
-        criteria.forEach(function(c){
-          var k=role+'_'+c.key;
-          var val=ratings[sid][k]||0;
-          var starsH=[1,2,3,4,5].map(function(i){return'<span class="star '+(i<=val?'filled':'')+'" onclick="setRating(\''+sid+'\',\''+k+'\','+i+')">★</span>';}).join('');
-          var tagH=val>0?'<span class="star-tag '+STAR_TAG_CLS[val]+'">'+val+' '+STAR_LABELS[val]+'</span>':'';
-          var descH='';
-          if(val>0){descH='<div class="level-desc l'+val+'">'+c.levels[val]+'</div>';}else{descH='<div class="level-hint">（㩒星星評分）</div>';}
-          ratingSections+='<div class="star-row"><div class="criteria-name">'+c.name+'</div><div class="criteria-desc">'+c.desc+'</div><div class="stars-wrap">'+starsH+tagH+'</div>'+descH+'</div>';
+      activeRoles.forEach(role=>{
+        const criteria=CRITERIA[role]||[];
+        const color=ROLE_COLOR[role];
+        ratingSections+=`<div class="role-section"><div class="role-hdr" style="color:${color}">${ROLE_LABEL[role]}</div>`;
+        criteria.forEach(c=>{
+          const k=role+'_'+c.key;
+          const val=ratings[sid][k]||0;
+          const starsH=[1,2,3,4,5].map(i=>`<span class="star ${i<=val?'filled':''}" onclick="setRating('${sid}','${k}',${i})">★</span>`).join('');
+          const tagH=val>0?`<span class="star-tag ${STAR_TAG_CLS[val]}">${val} ${STAR_LABELS[val]}</span>`:'';
+          let descH='';
+          if(val>0){descH=`<div class="level-desc l${val}">${c.levels[val]}</div>`;}else{descH=`<div class="level-hint">（㩒星星評分）</div>`;}
+          ratingSections+=`<div class="star-row"><div class="criteria-name">${c.name}</div><div class="criteria-desc">${c.desc}</div><div class="stars-wrap">${starsH}${tagH}</div>${descH}</div>`;
         });
         ratingSections+='</div>';
       });
-      var rmk=ratings[sid]._remarks||'';
-      ratingSections+='<div style="margin-top:14px;padding-top:14px;border-top:1.5px solid #f3f4f6"><label class="text-sm font-bold text-gray-500 mb-2 block">💬 備註（'+s.name+'）</label><textarea data-rmk="'+sid+'" rows="2" placeholder="對 '+s.name+' 嘅表現有咩補充？（可留空）" class="w-full border border-pink-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-rose-300 bg-pink-50 resize-none" oninput="if(!ratings[\''+sid+'\'])ratings[\''+sid+'\']={};ratings[\''+sid+'\']._remarks=this.value">'+rmk+'</textarea></div>';
+      const rmk=ratings[sid]._remarks||'';
+      ratingSections+=`<div style="margin-top:14px;padding-top:14px;border-top:1.5px solid #f3f4f6"><label class="text-sm font-bold text-gray-500 mb-2 block">💬 備註（${s.name}）</label><textarea data-rmk="${sid}" rows="2" placeholder="對 ${s.name} 嘅表現有咩補充？（可留空）" class="w-full border border-pink-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-rose-300 bg-pink-50 resize-none" oninput="if(!ratings['${sid}'])ratings['${sid}']={};ratings['${sid}']._remarks=this.value">${rmk}</textarea></div>`;
       ratingSections+='</div>';
     }
-    return'<div class="staff-card"><div class="staff-card-head"><div class="flex items-center gap-3"><div class="avatar">'+s.name[0]+'</div><div style="flex:1"><div class="flex items-center gap-2 flex-wrap"><span class="staff-name">'+s.name+'</span><span class="progress-badge '+pctClass+'">'+pctText+'</span></div></div><button type="button" class="remove-btn" onclick="removeStaff(\''+sid+'\')">✕</button></div><div class="role-chips">'+chips+'</div></div>'+ratingSections+'</div>';
+    return`<div class="staff-card"><div class="staff-card-head"><div class="flex items-center gap-3"><div class="avatar">${s.name[0]}</div><div style="flex:1"><div class="flex items-center gap-2 flex-wrap"><span class="staff-name">${s.name}</span><span class="progress-badge ${pctClass}">${pctText}</span></div></div><button type="button" class="remove-btn" onclick="removeStaff('${sid}')">✕</button></div><div class="role-chips">${chips}</div></div>${ratingSections}</div>`;
   }).join('');
 }
 
 /* ══════════ ENTRY ══════════ */
 function renderEntryCards(){
-  $('entryCards').innerHTML=ENTRY_PKGS.map(function(p){return'<div class="entry-card '+p.bg+' '+p.bd+'"><div style="display:flex;align-items:center;gap:12px;flex:1"><span style="font-size:32px">'+p.icon+'</span><span class="font-bold text-lg">'+p.name+'</span></div><div class="entry-stepper '+p.theme+'"><button type="button" onclick="adjEntry(\''+p.id+'\',-1)">−</button><input type="number" inputmode="numeric" id="'+p.id+'" min="0" value="0" oninput="onEntryInput(this)" onfocus="this.select()"><button type="button" onclick="adjEntry(\''+p.id+'\',1)">+</button></div></div>';}).join('');
+  $('entryCards').innerHTML=ENTRY_PKGS.map(p=>`<div class="entry-card ${p.bg} ${p.bd}"><div style="display:flex;align-items:center;gap:12px;flex:1"><span style="font-size:32px">${p.icon}</span><span class="font-bold text-lg">${p.name}</span></div><div class="entry-stepper ${p.theme}"><button type="button" onclick="adjEntry('${p.id}',-1)">−</button><input type="number" inputmode="numeric" id="${p.id}" min="0" value="0" oninput="onEntryInput(this)" onfocus="this.select()"><button type="button" onclick="adjEntry('${p.id}',1)">+</button></div></div>`).join('');
 }
-function adjEntry(id,d){var el=$(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);recalc();}
+function adjEntry(id,d){const el=$(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);recalc();}
 function onEntryInput(el){if(el.value<0||el.value==='')el.value=0;recalc();}
 
 function recalcEntry(){
-  var cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
+  const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
   if(tot>0){
     $('entryBar').classList.remove('hidden');
     $('barCrown').style.width=(cq/tot*100)+'%';$('barParade').style.width=(pq/tot*100)+'%';$('barCastle').style.width=(sq/tot*100)+'%';$('barRoyal').style.width=(rq/tot*100)+'%';
@@ -514,20 +468,17 @@ function recalcEntry(){
 }
 
 /* ══════════ SALES & RECALC ══════════ */
-function adj(id,d){var el=$(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);recalc();}
+function adj(id,d){const el=$(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);recalc();}
 
 function getCastle(){
-  var cAlb=v('all1980Alb')-v('crownAlb1980')-v('royalAlb1980');
-  var cStory=v('all1980Story')-v('royalStory1980');
+  const cAlb=v('all1980Alb')-v('crownAlb1980')-v('royalAlb1980');
+  const cStory=v('all1980Story')-v('royalStory1980');
   return{alb:cAlb,story:cStory,hasWarn:cAlb<0||cStory<0};
 }
 
-/* ═══════════════════════════════════════
-   ✅ 改動 2/6：recalc() 加入運費計算
-   ═══════════════════════════════════════ */
 function recalc(){
   recalcEntry();
-  var castle=getCastle();
+  const castle=getCastle();
   $('castleAlbAuto').textContent=Math.max(0,castle.alb);
   $('castleStoryAuto').textContent=Math.max(0,castle.story);
   if(castle.hasWarn){$('castleWarn').classList.remove('hidden');$('castleAutoCard').style.borderColor='#fca5a5';}
@@ -540,60 +491,45 @@ function recalc(){
   $('rev_soft').textContent=fmt(v('softcopy')*498);
   $('rev_photo').textContent=fmt(v('photo168')*168+v('photo130')*130);
   $('softMax').textContent=v('all1980Alb')+v('alb1500')+v('addonAlb');
-
-  // ✅ 運費計算
-  var shipRev = v('sbShipHK')*250 + v('sbShipAsia')*350 + v('sbShipIntl')*450;
-  $('rev_shipping').textContent = fmt(shipRev);
-
-  // ✅ Total Revenue 加入運費
-  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130+shipRev;
+  const totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130;
   $('liveRevenue').textContent='$'+fmt(totalRev);
   $('bottomRev').textContent='$'+fmt(totalRev);
-
-  // ✅ 顯示運費提示
-  if(shipRev > 0){
-    $('liveShipNote').classList.remove('hidden');
-    $('liveShipAmt').textContent = fmt(shipRev);
-  } else {
-    $('liveShipNote').classList.add('hidden');
-  }
-
-  var books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
+  const books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
   $('liveSold').textContent=books+' 本';
   recalcPkgConv();
 }
 
 function recalcPkgConv(){
-  var cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
+  const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
   if(tot===0){$('pkgConv').classList.add('hidden');return;}
-  var crownBook=v('crownAlb1980')+v('alb1438');
-  var crownUp=v('crownAlb1980');
-  var paradeSold=v('alb1500')+v('story1500');
-  var castle=getCastle();
-  var castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
-  var royalSold=v('royalAlb1980')+v('royalStory1980');
-  var mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
+  const crownBook=v('crownAlb1980')+v('alb1438');
+  const crownUp=v('crownAlb1980');
+  const paradeSold=v('alb1500')+v('story1500');
+  const castle=getCastle();
+  const castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
+  const royalSold=v('royalAlb1980')+v('royalStory1980');
+  const mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
   $('pkgConv').classList.remove('hidden');
-  var h='';
-  if(cq>0) h+=convRow('👑','Crown','bg-amber-50 text-amber-700','做書 '+pct(crownBook,cq),'bg-rose-50 text-rose-600','$1,980↑ '+pct(crownUp,cq));
-  if(pq>0) h+=convRowSingle('🎪','Parade','bg-blue-50 text-blue-700','做書 '+pct(paradeSold,pq));
-  if(sq>0) h+=convRowSingle('🏰','Castle','bg-violet-50 text-violet-700','升級$1,980 '+(castle.hasWarn?'⚠️':pct(castleUp,sq)));
-  if(rq>0) h+=convRowSingle('👸','Royal','bg-rose-50 text-rose-700','做書 '+pct(royalSold,rq));
+  let h='';
+  if(cq>0) h+=convRow('👑','Crown','bg-amber-50 text-amber-700',`做書 ${pct(crownBook,cq)}`,'bg-rose-50 text-rose-600',`$1,980↑ ${pct(crownUp,cq)}`);
+  if(pq>0) h+=convRowSingle('🎪','Parade','bg-blue-50 text-blue-700',`做書 ${pct(paradeSold,pq)}`);
+  if(sq>0) h+=convRowSingle('🏰','Castle','bg-violet-50 text-violet-700',`升級$1,980 ${castle.hasWarn?'⚠️':pct(castleUp,sq)}`);
+  if(rq>0) h+=convRowSingle('👸','Royal','bg-rose-50 text-rose-700',`做書 ${pct(royalSold,rq)}`);
   h+=convOverall(pct(mainBooks,tot));
   $('pkgConvBody').innerHTML=h;
 }
 
-function convRow(icon,name,cls1,txt1,cls2,txt2){return'<div class="conv-row"><span class="conv-pkg">'+icon+' '+name+'</span><div class="conv-badges"><span class="info-tag '+cls1+'">'+txt1+'</span><span class="info-tag '+cls2+'">'+txt2+'</span></div></div>';}
-function convRowSingle(icon,name,cls,txt){return'<div class="conv-row"><span class="conv-pkg">'+icon+' '+name+'</span><span class="info-tag '+cls+'">'+txt+'</span></div>';}
-function convOverall(val){return'<div class="conv-row" style="border-top:2px solid #fce7f3;padding-top:12px;margin-top:4px"><span class="conv-pkg">📈 Overall</span><span class="font-bold text-lg text-rose-600">'+val+'</span></div>';}
+function convRow(icon,name,cls1,txt1,cls2,txt2){return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><div class="conv-badges"><span class="info-tag ${cls1}">${txt1}</span><span class="info-tag ${cls2}">${txt2}</span></div></div>`;}
+function convRowSingle(icon,name,cls,txt){return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><span class="info-tag ${cls}">${txt}</span></div>`;}
+function convOverall(val){return`<div class="conv-row" style="border-top:2px solid #fce7f3;padding-top:12px;margin-top:4px"><span class="conv-pkg">📈 Overall</span><span class="font-bold text-lg text-rose-600">${val}</span></div>`;}
 
 /* ══════════ NAV ══════════ */
-function scrollToSec(e){e.preventDefault();var id=e.target.dataset.sec;var el=$(id);if(!el)return;var navH=document.querySelector('.section-nav').offsetHeight;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-navH-10,behavior:'smooth'});}
+function scrollToSec(e){e.preventDefault();const id=e.target.dataset.sec;const el=$(id);if(!el)return;const navH=document.querySelector('.section-nav').offsetHeight;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-navH-10,behavior:'smooth'});}
 function setupScrollSpy(){
-  var ids=['sec-basic','sec-staff','sec-entry','sec-sales','sec-remarks'];
-  var pills=document.querySelectorAll('.nav-pill');
-  var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){var idx=ids.indexOf(entry.target.id);if(idx>=0)pills.forEach(function(p,i){p.classList.toggle('active',i===idx);if(i===idx){var nav=document.querySelector('.section-nav');nav.scrollTo({left:p.offsetLeft-nav.offsetWidth/2+p.offsetWidth/2,behavior:'smooth'});}});}});},{rootMargin:'-30% 0px -50% 0px'});
-  ids.forEach(function(id){var el=$(id);if(el)observer.observe(el);});
+  const ids=['sec-basic','sec-staff','sec-entry','sec-sales','sec-remarks'];
+  const pills=document.querySelectorAll('.nav-pill');
+  const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=ids.indexOf(entry.target.id);if(idx>=0)pills.forEach((p,i)=>{p.classList.toggle('active',i===idx);if(i===idx){const nav=document.querySelector('.section-nav');nav.scrollTo({left:p.offsetLeft-nav.offsetWidth/2+p.offsetWidth/2,behavior:'smooth'});}});}});},{rootMargin:'-30% 0px -50% 0px'});
+  ids.forEach(id=>{const el=$(id);if(el)observer.observe(el);});
 }
 
 /* ══════════ SUBMIT ══════════ */
@@ -601,97 +537,78 @@ function showErr(msg){$('errMsg').textContent=msg;$('errModal').classList.remove
 function closeErr(){$('errModal').classList.add('hidden');}
 function closeConfirm(){$('confirmModal').classList.add('hidden');}
 
-/* ═══════════════════════════════════════
-   ✅ 改動 3/6：submitForm() 確認框加運費
-   ═══════════════════════════════════════ */
 function submitForm(){
   saveAllRemarks();
   if(!$('fDate').value){showErr('請選擇日期');return;}
   if(!selectedICs.length){showErr('請至少揀一位 IC');return;}
   if(!addedStaff.length){showErr('請至少加一位同事');return;}
-  var noRole=addedStaff.filter(function(sid){return !staffRoles[sid]||staffRoles[sid].size===0});
-  if(noRole.length){showErr(noRole.map(function(sid){return allStaff.find(function(x){return x.id===sid}).name}).join('、')+' 未揀崗位');return;}
-  var tot=v('crownQty')+v('paradeQty')+v('castleQty')+v('royalQty');
+  const noRole=addedStaff.filter(sid=>!staffRoles[sid]||staffRoles[sid].size===0);
+  if(noRole.length){showErr(noRole.map(sid=>allStaff.find(x=>x.id===sid).name).join('、')+' 未揀崗位');return;}
+  const tot=v('crownQty')+v('paradeQty')+v('castleQty')+v('royalQty');
   if(tot===0){showErr('至少要有一個 Package 入場');return;}
-  var castle=getCastle();
+  const castle=getCastle();
   if(castle.hasWarn){showErr('Castle 自動計算出現負數 — 請檢查「所有$1,980」、Crown正價、Royal 嘅數量');return;}
 
-  var rT=0,rF=0;
-  addedStaff.forEach(function(sid){Array.from(staffRoles[sid]||[]).forEach(function(r){(CRITERIA[r]||[]).forEach(function(c){rT++;if(ratings[sid]&&ratings[sid][r+'_'+c.key]>0)rF++;});});});
-  var rW=rF<rT?'<div class="bg-amber-50 rounded-lg p-3 text-sm text-amber-700">⚠️ 工作評分有 '+(rT-rF)+' 項未填</div>':'';
+  let rT=0,rF=0;
+  addedStaff.forEach(sid=>{[...(staffRoles[sid]||[])].forEach(r=>{(CRITERIA[r]||[]).forEach(c=>{rT++;if(ratings[sid]&&ratings[sid][r+'_'+c.key]>0)rF++;});});});
+  const rW=rF<rT?`<div class="bg-amber-50 rounded-lg p-3 text-sm text-amber-700">⚠️ 工作評分有 ${rT-rF} 項未填</div>`:'';
 
-  // ✅ totalRev 加入運費
-  var shipRev = v('sbShipHK')*250 + v('sbShipAsia')*350 + v('sbShipIntl')*450;
-  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130+shipRev;
-  var icN=selectedICs.map(function(id){return icList.find(function(x){return x.id===id}).name}).join('、');
-  var tH=addedStaff.filter(function(sid){return staffRoles[sid]&&staffRoles[sid].size>0}).map(function(sid){var s=allStaff.find(function(x){return x.id===sid});return'<span class="font-semibold">'+s.name+'</span> <span class="text-gray-400">'+Array.from(staffRoles[sid]).map(function(r){return ROLE_LABEL[r]}).join(' ')+'</span>';}).join('<br>');
+  const totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130;
+  const icN=selectedICs.map(id=>icList.find(x=>x.id===id).name).join('、');
+  const tH=addedStaff.filter(sid=>staffRoles[sid]&&staffRoles[sid].size>0).map(sid=>{const s=allStaff.find(x=>x.id===sid);return`<span class="font-semibold">${s.name}</span> <span class="text-gray-400">${[...staffRoles[sid]].map(r=>ROLE_LABEL[r]).join(' ')}</span>`;}).join('<br>');
 
-  var cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty');
-  var crownUp=v('crownAlb1980'),crownBook=crownUp+v('alb1438');
-  var castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
-  var paradeSold=v('alb1500')+v('story1500'),royalSold=v('royalAlb1980')+v('royalStory1980');
-  var mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
-  var convHtml='';
-  if(cq>0){convHtml+='<div class="flex justify-between"><span>👑 Crown 做書</span><span class="font-bold">'+pct(crownBook,cq)+'</span></div>';convHtml+='<div class="flex justify-between"><span>👑 Crown $1,980↑</span><span class="font-bold">'+pct(crownUp,cq)+'</span></div>';}
-  if(pq>0)convHtml+='<div class="flex justify-between"><span>🎪 Parade 做書</span><span class="font-bold">'+pct(paradeSold,pq)+'</span></div>';
-  if(sq>0)convHtml+='<div class="flex justify-between"><span>🏰 Castle 升級</span><span class="font-bold">'+pct(castleUp,sq)+'</span></div>';
-  if(rq>0)convHtml+='<div class="flex justify-between"><span>👸 Royal 做書</span><span class="font-bold">'+pct(royalSold,rq)+'</span></div>';
-  convHtml+='<div class="flex justify-between border-t border-gray-200 pt-2 mt-2"><span class="font-bold">📈 Overall</span><span class="font-bold text-rose-600">'+pct(mainBooks,tot)+'</span></div>';
+  const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty');
+  const crownUp=v('crownAlb1980'),crownBook=crownUp+v('alb1438');
+  const castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
+  const paradeSold=v('alb1500')+v('story1500'),royalSold=v('royalAlb1980')+v('royalStory1980');
+  const mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
+  let convHtml='';
+  if(cq>0){convHtml+=`<div class="flex justify-between"><span>👑 Crown 做書</span><span class="font-bold">${pct(crownBook,cq)}</span></div>`;convHtml+=`<div class="flex justify-between"><span>👑 Crown $1,980↑</span><span class="font-bold">${pct(crownUp,cq)}</span></div>`;}
+  if(pq>0)convHtml+=`<div class="flex justify-between"><span>🎪 Parade 做書</span><span class="font-bold">${pct(paradeSold,pq)}</span></div>`;
+  if(sq>0)convHtml+=`<div class="flex justify-between"><span>🏰 Castle 升級</span><span class="font-bold">${pct(castleUp,sq)}</span></div>`;
+  if(rq>0)convHtml+=`<div class="flex justify-between"><span>👸 Royal 做書</span><span class="font-bold">${pct(royalSold,rq)}</span></div>`;
+  convHtml+=`<div class="flex justify-between border-t border-gray-200 pt-2 mt-2"><span class="font-bold">📈 Overall</span><span class="font-bold text-rose-600">${pct(mainBooks,tot)}</span></div>`;
 
-  // ✅ 運費確認框
-  var shipHtml = '';
-  if(shipRev > 0){
-    shipHtml = '<div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">'+
-      '<div class="font-bold text-pink-700 mb-1">📬 Storybook 運費</div>';
-    if(v('sbShipHK')>0) shipHtml += '<div class="flex justify-between"><span>🇭🇰 Hong Kong ×'+v('sbShipHK')+'</span><span class="font-bold">$'+fmt(v('sbShipHK')*250)+'</span></div>';
-    if(v('sbShipAsia')>0) shipHtml += '<div class="flex justify-between"><span>🌏 Asia ×'+v('sbShipAsia')+'</span><span class="font-bold">$'+fmt(v('sbShipAsia')*350)+'</span></div>';
-    if(v('sbShipIntl')>0) shipHtml += '<div class="flex justify-between"><span>🌍 International ×'+v('sbShipIntl')+'</span><span class="font-bold">$'+fmt(v('sbShipIntl')*450)+'</span></div>';
-    shipHtml += '<div class="flex justify-between border-t border-pink-200 pt-1 mt-1"><span class="font-bold text-pink-600">運費小計</span><span class="font-bold text-pink-600">$'+fmt(shipRev)+'</span></div></div>';
-  }
-
-  $('confirmBody').innerHTML=
-    '<div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">'+
-      '<div class="flex justify-between"><span class="text-gray-400">📅 日期</span><span class="font-bold text-gray-700">'+$('fDate').value+'</span></div>'+
-      '<div class="flex justify-between"><span class="text-gray-400">🧑‍💼 IC</span><span class="font-bold text-gray-700">'+icN+'</span></div>'+
-    '</div>'+
-    '<div class="bg-pink-50 rounded-lg p-3 text-sm">'+tH+'</div>'+
-    '<div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">'+
-      '<div class="flex justify-between"><span class="text-gray-400">🚪 總入場</span><span class="font-bold text-gray-700">'+tot+' 組</span></div>'+
-      '<div class="flex justify-between"><span class="text-gray-400">👑 Crown</span><span>'+cq+'</span></div>'+
-      '<div class="flex justify-between"><span class="text-gray-400">🎪 Parade</span><span>'+pq+'</span></div>'+
-      '<div class="flex justify-between"><span class="text-gray-400">🏰 Castle</span><span>'+sq+'</span></div>'+
-      '<div class="flex justify-between"><span class="text-gray-400">👸 Royal</span><span>'+rq+'</span></div>'+
-    '</div>'+
-    '<div class="bg-violet-50 rounded-lg p-3 text-sm space-y-1">'+
-      '<div class="font-bold text-violet-700 mb-1">📊 銷售拆分</div>'+
-      '<div class="flex justify-between"><span>📊 所有$1,980</span><span>📗'+v('all1980Alb')+' 📕'+v('all1980Story')+'</span></div>'+
-      '<div class="flex justify-between"><span>👑 Crown正價$1,980</span><span>'+v('crownAlb1980')+'</span></div>'+
-      '<div class="flex justify-between"><span>👸 Royal</span><span>📗'+v('royalAlb1980')+' 📕'+v('royalStory1980')+'</span></div>'+
-      '<div class="flex justify-between"><span>🏰 Castle（自動）</span><span>📗'+Math.max(0,castle.alb)+' 📕'+Math.max(0,castle.story)+'</span></div>'+
-      '<div class="flex justify-between"><span>👑 $1,438</span><span>'+v('alb1438')+'</span></div>'+
-      '<div class="flex justify-between"><span>🎪 Parade $1,500</span><span>📗'+v('alb1500')+' 📕'+v('story1500')+'</span></div>'+
-    '</div>'+
-    '<div class="bg-purple-50 rounded-lg p-3 text-sm space-y-1">'+
-      '<div class="font-bold text-purple-700 mb-1">📈 轉化 / 升級率</div>'+
-      convHtml+
-    '</div>'+
-    shipHtml+  /* ✅ 運費確認框 */
-    '<div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg p-3 text-sm flex justify-between items-center border border-rose-200">'+
-      '<span class="font-bold text-rose-600">💰 Total Revenue</span>'+
-      '<span class="text-xl font-black text-rose-600">$'+fmt(totalRev)+'</span>'+
-    '</div>'+
-    (shipRev > 0 ? '<div class="text-xs text-gray-400 text-center">（含運費 $'+fmt(shipRev)+'）</div>' : '')+
-    '<div class="bg-pink-50 rounded-lg p-3 text-sm flex justify-between">'+
-      '<span class="text-gray-400">⭐ 評分完成</span><span class="font-bold text-gray-700">'+rF+' / '+rT+' 項</span>'+
-    '</div>'+
-    rW;
+  $('confirmBody').innerHTML=`
+    <div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="flex justify-between"><span class="text-gray-400">📅 日期</span><span class="font-bold text-gray-700">${$('fDate').value}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">🧑‍💼 IC</span><span class="font-bold text-gray-700">${icN}</span></div>
+    </div>
+    <div class="bg-pink-50 rounded-lg p-3 text-sm">${tH}</div>
+    <div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="flex justify-between"><span class="text-gray-400">🚪 總入場</span><span class="font-bold text-gray-700">${tot} 組</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">👑 Crown</span><span>${cq}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">🎪 Parade</span><span>${pq}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">🏰 Castle</span><span>${sq}</span></div>
+      <div class="flex justify-between"><span class="text-gray-400">👸 Royal</span><span>${rq}</span></div>
+    </div>
+    <div class="bg-violet-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="font-bold text-violet-700 mb-1">📊 銷售拆分</div>
+      <div class="flex justify-between"><span>📊 所有$1,980</span><span>📗${v('all1980Alb')} 📕${v('all1980Story')}</span></div>
+      <div class="flex justify-between"><span>👑 Crown正價$1,980</span><span>${v('crownAlb1980')}</span></div>
+      <div class="flex justify-between"><span>👸 Royal</span><span>📗${v('royalAlb1980')} 📕${v('royalStory1980')}</span></div>
+      <div class="flex justify-between"><span>🏰 Castle（自動）</span><span>📗${Math.max(0,castle.alb)} 📕${Math.max(0,castle.story)}</span></div>
+      <div class="flex justify-between"><span>👑 $1,438</span><span>${v('alb1438')}</span></div>
+      <div class="flex justify-between"><span>🎪 Parade $1,500</span><span>📗${v('alb1500')} 📕${v('story1500')}</span></div>
+    </div>
+    <div class="bg-purple-50 rounded-lg p-3 text-sm space-y-1">
+      <div class="font-bold text-purple-700 mb-1">📈 轉化 / 升級率</div>
+      ${convHtml}
+    </div>
+    <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg p-3 text-sm flex justify-between items-center border border-rose-200">
+      <span class="font-bold text-rose-600">💰 Total Revenue</span>
+      <span class="text-xl font-black text-rose-600">$${fmt(totalRev)}</span>
+    </div>
+    <div class="bg-pink-50 rounded-lg p-3 text-sm flex justify-between">
+      <span class="text-gray-400">⭐ 評分完成</span><span class="font-bold text-gray-700">${rF} / ${rT} 項</span>
+    </div>
+    ${rW}`;
   $('confirmModal').classList.remove('hidden');
 }
 
-/* ═══════════════════════════════════════
-   ✅ 改動 4/6：doSubmit() totalRev 加運費
-   ✅ 改動 5/6：payload 加 3 個運費欄位
-   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   🔧 FIX 2: 修正 fetch — 移除 no-cors，可讀取回應
+   ═══════════════════════════════════════════════════ */
 function doSubmit(){
   closeConfirm();
   saveAllRemarks();
@@ -700,17 +617,13 @@ function doSubmit(){
   btn.textContent='⏳ 提交中...';
 
   var castle=getCastle();
-
-  // ✅ totalRev 加入運費
-  var shipRev = v('sbShipHK')*250 + v('sbShipAsia')*350 + v('sbShipIntl')*450;
   var totalRev=(v('all1980Alb')+v('all1980Story'))*1980
     +v('alb1438')*1438
     +(v('alb1500')+v('story1500'))*1500
     +(v('addonAlb')+v('addonStory'))*1688
     +v('rovFull')*1688+v('rovDisc')*1299
     +v('softcopy')*498
-    +v('photo168')*168+v('photo130')*130
-    +shipRev;
+    +v('photo168')*168+v('photo130')*130;
   var books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
   var ic1=selectedICs[0]?icList.find(function(x){return x.id===selectedICs[0]}).name:'';
   var ic2=selectedICs[1]?icList.find(function(x){return x.id===selectedICs[1]}).name:'';
@@ -731,19 +644,14 @@ function doSubmit(){
       roving_1688:v('rovFull'), roving_1299:v('rovDisc'),
       softcopy_498:v('softcopy'), photo_168:v('photo168'), photo_130:v('photo130'),
       total_revenue:totalRev, total_books:books,
-      remarks:$('fRemarks').value,
-
-      // ✅ 新增：3 個運費欄位（對應 Apps Script 嘅 AD, AE, AF）
-      sb_ship_hk:   v('sbShipHK'),
-      sb_ship_asia:  v('sbShipAsia'),
-      sb_ship_intl:  v('sbShipIntl')
+      remarks:$('fRemarks').value
     },
     ratings:addedStaff.map(function(sid){
       var s=allStaff.find(function(x){return x.id===sid});
       var r=ratings[sid]||{};
       return{
         staff_name:s.name,
-        roles:staffRoles[sid]?Array.from(staffRoles[sid]).join(','):'',
+        roles:staffRoles[sid]?[...staffRoles[sid]].join(','):'',
         sales_upsell:    r['sales_upsell']||0,
         sales_proactive: r['sales_proactive']||0,
         sales_objection: r['sales_objection']||0,
@@ -761,6 +669,7 @@ function doSubmit(){
 
   console.log('📤 送出 payload:', JSON.stringify(payload, null, 2));
 
+  /* 🔧 FIX: 先試 cors mode 讀回應，失敗再 fallback no-cors */
   fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -774,18 +683,20 @@ function doSubmit(){
     btn.textContent = '✅ 提交日報';
     var result;
     try { result = JSON.parse(text); } catch(e) { result = null; }
-    if(result && result.status === 'success'){
+    if(result && result.status === 'ok'){
       $('successModal').classList.remove('hidden');
       spawnConfetti();
     } else if(result && result.status === 'error'){
       showErr('❌ Server 錯誤：' + (result.message || '未知'));
     } else {
+      /* 如果回應唔係 JSON（例如 redirect HTML），當成功 */
       $('successModal').classList.remove('hidden');
       spawnConfetti();
     }
   })
   .catch(function(err){
     console.warn('⚠️ CORS fetch 失敗，改用 no-cors:', err.message);
+    /* Fallback: no-cors（送到但睇唔到回應） */
     fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -807,31 +718,31 @@ function doSubmit(){
   });
 }
 
-function spawnConfetti(){var box=$('confettiBox');var colors=['#f472b6','#fb7185','#f59e0b','#8b5cf6','#3b82f6','#10b981'];for(var i=0;i<35;i++){var p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.top='-10px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.6+'s';p.style.animationDuration=(.8+Math.random()*.6)+'s';box.appendChild(p);}setTimeout(function(){box.innerHTML='';},2500);}
+function spawnConfetti(){const box=$('confettiBox');const colors=['#f472b6','#fb7185','#f59e0b','#8b5cf6','#3b82f6','#10b981'];for(let i=0;i<35;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.top='-10px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.6+'s';p.style.animationDuration=(.8+Math.random()*.6)+'s';box.appendChild(p);}setTimeout(()=>{box.innerHTML='';},2500);}
 
-/* ═══════════════════════════════════════
-   ✅ 改動 6/6：resetForm() 已自動處理
-   （因為 sbShipHK/Asia/Intl 已加入 ALL_SALE_IDS）
-   ═══════════════════════════════════════ */
 function resetForm(){
   $('successModal').classList.add('hidden');
   selectedICs=[];addedStaff=[];staffRoles={};ratings={};
   renderICChips();refreshICDD();renderStaff();refreshStaffDD();
   $('fDate').value=new Date().toISOString().slice(0,10);
   $('fRemarks').value='';
-  ENTRY_PKGS.forEach(function(p){var el=$(p.id);if(el)el.value=0;});
-  ALL_SALE_IDS.forEach(function(id){var el=$(id);if(el)el.value=0;});
+  ENTRY_PKGS.forEach(p=>{const el=$(p.id);if(el)el.value=0;});
+  ALL_SALE_IDS.forEach(id=>{const el=$(id);if(el)el.value=0;});
   $('entryBar').classList.add('hidden');
   $('pkgConv').classList.add('hidden');
   recalc();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* ══════════ INIT ══════════ */
+/* ══════════════════════════════
+   🔧 FIX 3: INIT 時載入名單
+   ══════════════════════════════ */
 window.addEventListener('DOMContentLoaded',function(){
   $('fDate').value=new Date().toISOString().slice(0,10);
   renderEntryCards();
   setupScrollSpy();
+
+  /* 從 Google Sheet 載入同事名單 */
   loadStaffFromSheet();
 });
 </script>
