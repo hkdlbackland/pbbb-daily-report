@@ -169,14 +169,10 @@ function getDailyStaffScores(staffName, staffList, year, month) {
   return days;
 }
 
-// ══════════════════════════════════════════
-//  真實數據轉換：API JSON → Dashboard 格式
-// ══════════════════════════════════════════
 function transformAPIData(apiData, staffList) {
   var dailyRows = apiData.daily || [];
   var ratingRows = apiData.ratings || [];
 
-  // ── 將每日 row group by 年-月 ──
   var monthMap = {};
   dailyRows.forEach(function(row) {
     var dateStr = row.Date || "";
@@ -190,7 +186,6 @@ function transformAPIData(apiData, staffList) {
     monthMap[key].dayDetails.push({ day: day, row: row });
   });
 
-  // ── 將 staff rating rows group by 年-月-員工 ──
   var ratingMap = {};
   ratingRows.forEach(function(row) {
     var dateStr = row.Date || "";
@@ -206,7 +201,6 @@ function transformAPIData(apiData, staffList) {
     ratingMap[key][staff].push(row);
   });
 
-  // Sheet 欄位 → Dashboard 評分 key 對照
   var scoreFieldMap = {
     efficiency: "photo_efficiency", quality: "photo_quality",
     direction: "photo_direction", output: "photo_output",
@@ -267,7 +261,9 @@ function transformAPIData(apiData, staffList) {
     var addOn1688Eligible = royalAlbum + royalStorybook + castleAlbum + castleStorybook + paradeAlbum + paradeStorybook + crownAlbum1980 + rovingAlbum + rovingSecond;
     var addOn498Eligible = royalAlbum + castleAlbum + paradeAlbum + crownAlbum1980 + addOnAlbum;
 
-    // 員工評分
+    var all1980album = royalAlbum + castleAlbum + crownAlbum1980;
+    var all1980storybook = royalStorybook + castleStorybook;
+
     var rKey = year + "-" + month;
     var staffRatings = {};
     staffList.forEach(function(name) {
@@ -301,6 +297,7 @@ function transformAPIData(apiData, staffList) {
       revenue: revenue, netSales: netSales, bookings: bookings,
       staffRatings: staffRatings,
       addOn1688Eligible: addOn1688Eligible, addOn498Eligible: addOn498Eligible,
+      all1980album: all1980album, all1980storybook: all1980storybook,
       perCap: Math.round(revenue / Math.max(bookings, 1)),
       bookingValue: Math.round(netSales / Math.max(bookings, 1)),
       conv: mainProducts / Math.max(totalEntry, 1),
@@ -315,14 +312,12 @@ function transformAPIData(apiData, staffList) {
 
   allMonths.sort(function(a, b) { return (a.year * 100 + a.month) - (b.year * 100 + b.month); });
 
-  // ── 建立最新月份嘅每日明細（Per Cap 折線圖用）──
   var dailyData = [];
   if (allMonths.length > 0) {
     var latest = allMonths[allMonths.length - 1];
     var prevLatest = allMonths.length > 1 ? allMonths[allMonths.length - 2] : null;
     var lKey = latest.year + "-" + latest.month;
     var lMG = monthMap[lKey];
-    // 上月每日 map（用嚟畫虛線）
     var prevDayMap = {};
     if (prevLatest) {
       var pKey = prevLatest.year + "-" + prevLatest.month;
@@ -380,6 +375,10 @@ function generateAllData(staffList) {
       var totalProducts = mainProducts + addOnAlbum + addOnStorybook + rovingAlbum + rovingSecond + addOnSoftcopy + print8R + print8RSecond + freePrint168;
       var revenue = royalAlbum * 1980 + royalStorybook * 1980 + castleAlbum * 1980 + castleStorybook * 1980 + paradeAlbum * 1500 + paradeStorybook * 1500 + crownAlbum1980 * 1980 + crownAlbum1438 * 1438 + addOnAlbum * 1688 + addOnStorybook * 1688 + rovingAlbum * 1688 + rovingSecond * 1299 + addOnSoftcopy * 498 + print8R * 168 + print8RSecond * 130 + freePrint168 * 168;
       var netSales = Math.round(revenue * (0.85 + rand() * 0.1));
+
+      var all1980album = royalAlbum + castleAlbum + crownAlbum1980;
+      var all1980storybook = royalStorybook + castleStorybook;
+
       var staffRatings = {}; staffList.forEach((name, idx) => {
         var sr = makeRandom(year * 10000 + month * 100 + idx * 7);
         var scores = {}; ALL_CRITERIA.forEach(c => { scores[c.key] = +(2.5 + sr() * 2.5).toFixed(1); });
@@ -393,7 +392,7 @@ function generateAllData(staffList) {
         var sConvRate = sEntry > 0 ? (sAlbumSold + sStorybookSold) / sEntry : 0;
         staffRatings[name] = { scores, avg: +(allS.reduce((a, b) => a + b, 0) / allS.length).toFixed(1), entry: sEntry, albumSold: sAlbumSold, storybookSold: sStorybookSold, perCap: sPerCap, convRate: sConvRate };
       });
-      allMonths.push({ year, month, crownEntry, paradeEntry, castleEntry, royalEntry, totalEntry, royalAlbum, royalStorybook, castleAlbum, castleStorybook, paradeAlbum, paradeStorybook, crownAlbum1980, crownAlbum1438, addOnAlbum, addOnStorybook, rovingAlbum, rovingSecond, addOnSoftcopy, print8R, print8RSecond, freePrint168, totalProducts, mainProducts, revenue, netSales, bookings, staffRatings, addOn1688Eligible, addOn498Eligible, perCap: Math.round(revenue / Math.max(bookings, 1)), bookingValue: Math.round(netSales / Math.max(bookings, 1)), conv: mainProducts / Math.max(totalEntry, 1), crownConv: crownSold / Math.max(crownEntry, 1), paradeConv: paradeSold / Math.max(paradeEntry, 1), castleConv: castleSold / Math.max(castleEntry, 1), royalConv: royalSold / Math.max(royalEntry, 1), addOn1688Rate: (addOnAlbum + addOnStorybook) / Math.max(addOn1688Eligible, 1), addOn498Rate: addOnSoftcopy / Math.max(addOn498Eligible, 1) });
+      allMonths.push({ year, month, crownEntry, paradeEntry, castleEntry, royalEntry, totalEntry, royalAlbum, royalStorybook, castleAlbum, castleStorybook, paradeAlbum, paradeStorybook, crownAlbum1980, crownAlbum1438, addOnAlbum, addOnStorybook, rovingAlbum, rovingSecond, addOnSoftcopy, print8R, print8RSecond, freePrint168, totalProducts, mainProducts, revenue, netSales, bookings, staffRatings, addOn1688Eligible, addOn498Eligible, all1980album, all1980storybook, perCap: Math.round(revenue / Math.max(bookings, 1)), bookingValue: Math.round(netSales / Math.max(bookings, 1)), conv: mainProducts / Math.max(totalEntry, 1), crownConv: crownSold / Math.max(crownEntry, 1), paradeConv: paradeSold / Math.max(paradeEntry, 1), castleConv: castleSold / Math.max(castleEntry, 1), royalConv: royalSold / Math.max(royalEntry, 1), addOn1688Rate: (addOnAlbum + addOnStorybook) / Math.max(addOn1688Eligible, 1), addOn498Rate: addOnSoftcopy / Math.max(addOn498Eligible, 1) });
     }
   }
   var currentMonth = allMonths.find(d => d.year === 2026 && d.month === 9);
@@ -507,6 +506,8 @@ function aggregateMonthData(dataArr) {
   r.addOn1688Rate = (r.addOnAlbum + r.addOnStorybook) / Math.max(r.addOn1688Eligible, 1);
   r.addOn498Eligible = r.royalAlbum + r.castleAlbum + r.paradeAlbum + r.crownAlbum1980 + r.addOnAlbum;
   r.addOn498Rate = r.addOnSoftcopy / Math.max(r.addOn498Eligible, 1);
+  r.all1980album = r.royalAlbum + r.castleAlbum + r.crownAlbum1980;
+  r.all1980storybook = r.royalStorybook + r.castleStorybook;
   return r;
 }
 
@@ -1078,7 +1079,9 @@ function PBBBDashboard() {
       { icon: "💎", name: "Net Sales", key: "netSales", formatter: formatMoney, editable: detailView === "month" },
       { icon: "📈", name: "Booking Value", key: "bookingValue", formatter: formatMoney },
       { icon: "📕", name: "Album 總數", key: "totalAlbumSold", formatter: v => (v || 0) + " 本" },
-      { icon: "📗", name: "Storybook 總數", key: "totalStorybookSold", formatter: v => (v || 0) + " 本" }
+      { icon: "📗", name: "Storybook 總數", key: "totalStorybookSold", formatter: v => (v || 0) + " 本" },
+      { icon: "📕", name: "所有$1,980 Album", key: "all1980album", formatter: v => (v || 0) + " 本" },
+      { icon: "📗", name: "所有$1,980 Storybook", key: "all1980storybook", formatter: v => (v || 0) + " 本" }
     ];
     function makePeriodsFor(key) {
       var ps = [{ label: dd.periodWord, value: cur[key], color: CUR_COLOR }];
