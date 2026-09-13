@@ -102,6 +102,7 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
 .progress-badge.empty{background:#f3f4f6;color:#9ca3af}
 .auto-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;background:#f3e8ff;color:#7c3aed}
 .castle-auto-val{display:inline-flex;align-items:center;gap:6px;background:#f5f3ff;border-radius:10px;padding:8px 14px;font-weight:700;font-size:15px;color:#6d28d9}
+.loading-banner{text-align:center;padding:12px;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:12px;font-size:14px;font-weight:600;color:#b45309;animation:fadeUp .3s ease}
 </style>
 </head>
 <body>
@@ -157,6 +158,8 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <span class="info-tag bg-blue-50 text-blue-600">💼 Sales 3項</span>
       </div>
     </div>
+    <!-- 🔧 FIX 1: Loading banner -->
+    <div id="staffLoading" class="loading-banner mb-3">⏳ 正在從 Google Sheet 載入同事名單...</div>
     <div id="staffList"></div>
     <div id="staffDropdownWrap" class="mt-2"><select id="staffDropdown" class="auto-select" onchange="onStaffSelect(this)"><option value="">＋ 揀同事加入...</option></select></div>
     <div id="allAddedHint" class="hidden text-center py-3 mt-2"><span class="info-tag bg-emerald-50 text-emerald-600">✅ 所有同事已加入</span></div>
@@ -183,7 +186,6 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
       </div>
       <div class="text-center mt-3"><span class="text-sm text-gray-400">總入場 </span><span id="totalEntry" class="text-2xl font-black text-rose-500">0</span><span class="text-sm text-gray-400"> 組</span></div>
     </div>
-    <!-- Per-package conversion -->
     <div id="pkgConv" class="hidden section-card mt-3">
       <div class="flex items-center gap-2 mb-2"><span style="font-size:20px">📊</span><div class="font-bold text-base text-gray-700">各 Package 轉化 / 升級率</div></div>
       <div class="text-xs text-gray-400 mb-3">入場 → 做書 或 Upgrade $1,980（需同時填入場 + 銷售先顯示）</div>
@@ -198,8 +200,6 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
     </div>
 
     <div id="salesItems" class="space-y-3">
-
-      <!-- ── 所有 $1,980 ── -->
       <div class="cat-card border-pink-300" style="background:linear-gradient(135deg,#fff5f7,#fff0f3)">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">📊</span><span class="font-bold text-base text-pink-700">所有 $1,980</span></div>
         <div class="note mb-3">Crown 正價 + Castle Upgrade + Royal 嘅 $1,980 合計</div>
@@ -207,8 +207,6 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">📕 $1,980 Storybook</span><div class="stepper"><button type="button" onclick="adj('all1980Story',-1)">−</button><input type="number" inputmode="numeric" id="all1980Story" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('all1980Story',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-pink-600">= $<span id="rev_all1980">0</span></span></div>
       </div>
-
-      <!-- ── Crown ── -->
       <div class="cat-card border-amber-300">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">👑</span><span class="font-bold text-base text-amber-700">Crown</span></div>
         <div class="note mb-3">正價 $1,980 已計入上方「所有 $1,980」</div>
@@ -216,16 +214,12 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">📙 $1,438 Album</span><div class="stepper"><button type="button" onclick="adj('alb1438',-1)">−</button><input type="number" inputmode="numeric" id="alb1438" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('alb1438',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-xs text-gray-400 mr-1">$1,438 部分</span><span class="text-sm font-bold text-amber-600">= $<span id="rev_crown1438">0</span></span></div>
       </div>
-
-      <!-- ── Royal $1,980 ── -->
       <div class="cat-card border-rose-300">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">👸</span><span class="font-bold text-base text-rose-700">Royal $1,980</span></div>
         <div class="note mb-3">已計入上方「所有 $1,980」</div>
         <div class="sale-row"><span class="sale-label">📗 $1,980 Album</span><div class="stepper"><button type="button" onclick="adj('royalAlb1980',-1)">−</button><input type="number" inputmode="numeric" id="royalAlb1980" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('royalAlb1980',1)">+</button></div></div>
         <div class="sale-row"><span class="sale-label">📕 $1,980 Storybook</span><div class="stepper"><button type="button" onclick="adj('royalStory1980',-1)">−</button><input type="number" inputmode="numeric" id="royalStory1980" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('royalStory1980',1)">+</button></div></div>
       </div>
-
-      <!-- ── Castle Upgrade AUTO ── -->
       <div id="castleAutoCard" class="cat-card border-violet-300" style="border-style:dashed;background:linear-gradient(135deg,#faf5ff,#f5f3ff)">
         <div class="flex items-center gap-2 mb-1">
           <span class="text-xl">🏰</span>
@@ -239,16 +233,12 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         </div>
         <div id="castleWarn" class="hidden mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">⚠️ 數據有出入 — Crown正價 + Royal 超過「所有 $1,980」數量，請檢查</div>
       </div>
-
-      <!-- ── Parade $1,500 ── -->
       <div class="cat-card border-blue-200">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">🎪</span><span class="font-bold text-base text-blue-700">Parade $1,500</span></div>
         <div class="sale-row"><span class="sale-label">📗 $1,500 Album</span><div class="stepper"><button type="button" onclick="adj('alb1500',-1)">−</button><input type="number" inputmode="numeric" id="alb1500" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('alb1500',1)">+</button></div></div>
         <div class="sale-row"><span class="sale-label">📕 $1,500 Storybook</span><div class="stepper"><button type="button" onclick="adj('story1500',-1)">−</button><input type="number" inputmode="numeric" id="story1500" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('story1500',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-blue-600">= $<span id="rev_parade">0</span></span></div>
       </div>
-
-      <!-- ── Add-on $1,688 ── -->
       <div class="cat-card border-pink-300">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">📦</span><span class="font-bold text-base text-pink-700">Add-on $1,688</span></div>
         <div class="note mb-3">加購多一本</div>
@@ -256,8 +246,6 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">📕 $1,688 Storybook</span><div class="stepper"><button type="button" onclick="adj('addonStory',-1)">−</button><input type="number" inputmode="numeric" id="addonStory" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('addonStory',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-pink-600">= $<span id="rev_addon">0</span></span></div>
       </div>
-
-      <!-- ── Roving ── -->
       <div class="cat-card border-emerald-200">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">🌳</span><span class="font-bold text-base text-emerald-700">BBB Roving Album</span></div>
         <div class="note mb-3">包 30 分鐘戶外拍攝 + 30 分鐘底片全包</div>
@@ -265,16 +253,12 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">🏷️ $1,299（優惠價）</span><div class="stepper"><button type="button" onclick="adj('rovDisc',-1)">−</button><input type="number" inputmode="numeric" id="rovDisc" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('rovDisc',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-emerald-600">= $<span id="rev_roving">0</span></span></div>
       </div>
-
-      <!-- ── Softcopy ── -->
       <div class="cat-card border-cyan-200">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">💿</span><span class="font-bold text-base text-cyan-700">Softcopy $498</span></div>
         <div class="note mb-3">只有買咗 Album 先可以加（Storybook ❌ · $1,438 ❌）<br>可加: <strong id="softMax" class="text-cyan-600">0</strong> 位</div>
         <div class="sale-row"><span class="sale-label">💿 $498 Softcopy</span><div class="stepper"><button type="button" onclick="adj('softcopy',-1)">−</button><input type="number" inputmode="numeric" id="softcopy" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('softcopy',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-cyan-600">= $<span id="rev_soft">0</span></span></div>
       </div>
-
-      <!-- ── 單買相 ── -->
       <div class="cat-card border-gray-200">
         <div class="flex items-center gap-2 mb-1"><span class="text-xl">🖼️</span><span class="font-bold text-base text-gray-700">單買相</span></div>
         <div class="note mb-3">跟 Report 數字直接打張數</div>
@@ -282,10 +266,8 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">🖼️ $130 / 張</span><div class="stepper"><button type="button" onclick="adj('photo130',-1)">−</button><input type="number" inputmode="numeric" id="photo130" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('photo130',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-gray-600">= $<span id="rev_photo">0</span></span></div>
       </div>
+    </div>
 
-    </div><!-- /salesItems -->
-
-    <!-- Total Revenue -->
     <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-5 border border-rose-200 mt-3">
       <div class="flex items-center justify-between">
         <div><div class="text-sm text-gray-500">💰 Total Revenue</div><div id="liveRevenue" class="text-3xl font-black text-rose-600">$0</div></div>
@@ -320,8 +302,10 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
 const API_URL = 'https://script.google.com/macros/s/AKfycbx9bGA43qOTImiaRNE4y2yDRUUeYT1vX-2cF5LCqUd35upY9981ODEhmjgWXBdWVsIM/exec';
 
 /* ══════════ DATA ══════════ */
-const allStaff=[{id:'s1',name:'Alice'},{id:'s2',name:'Bob'},{id:'s3',name:'Charlie'},{id:'s4',name:'Diana'},{id:'s5',name:'Elsa'},{id:'s6',name:'Fiona'}];
-const icList=[{id:'ic1',name:'Alice'},{id:'ic2',name:'Bob'},{id:'ic3',name:'Charlie'},{id:'ic4',name:'Diana'},{id:'ic5',name:'Elsa'},{id:'ic6',name:'Fiona'}];
+/* 🔧 FIX 1: 改成 let — 頁面載入時會從 Google Sheet 讀取真正名單 */
+let allStaff = [];
+let icList   = [];
+
 const IC_MAX=2;
 const ROLES=['photographer','assistant','sales'];
 const ROLE_LABEL={photographer:'📸 攝影師',assistant:'🤝 Assistant',sales:'💼 Sales'};
@@ -364,6 +348,56 @@ const $=id=>document.getElementById(id);
 const v=id=>{const el=$(id);return el?parseInt(el.value)||0:0};
 const fmt=n=>n.toLocaleString();
 const pct=(a,b)=>b>0?Math.round(a/b*100)+'%':'—';
+
+/* ══════════════════════════════════════════
+   🔧 FIX 1: 從 Google Sheet 載入 Staff 名單
+   ══════════════════════════════════════════ */
+function loadStaffFromSheet(){
+  var loadingEl = $('staffLoading');
+  fetch(API_URL + '?action=getStaff')
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      console.log('📋 Staff API response:', text);
+      var data;
+      try { data = JSON.parse(text); } catch(e) { throw new Error('JSON parse failed'); }
+      if(data.staff && data.staff.length > 0){
+        allStaff = [];
+        icList = [];
+        data.staff.forEach(function(name, i){
+          allStaff.push({ id: 's'+(i+1), name: name });
+          icList.push({ id: 'ic'+(i+1), name: name });
+        });
+        console.log('✅ 已載入 ' + allStaff.length + ' 位同事:', allStaff.map(function(s){return s.name;}));
+        if(loadingEl) loadingEl.innerHTML = '✅ 已載入 ' + allStaff.length + ' 位同事';
+        setTimeout(function(){ if(loadingEl) loadingEl.style.display='none'; }, 1500);
+      } else {
+        console.warn('⚠️ Sheet 無 staff 資料，用 fallback');
+        useFallbackStaff();
+        if(loadingEl) loadingEl.innerHTML = '⚠️ Sheet 未有同事資料，用預設名單';
+      }
+      refreshICDD();
+      refreshStaffDD();
+    })
+    .catch(function(err){
+      console.error('❌ 載入名單失敗:', err);
+      useFallbackStaff();
+      if(loadingEl){
+        loadingEl.innerHTML = '⚠️ 未能連接 Google Sheet，用預設名單';
+        loadingEl.style.background = '#fee2e2';
+        loadingEl.style.borderColor = '#fca5a5';
+        loadingEl.style.color = '#b91c1c';
+      }
+      refreshICDD();
+      refreshStaffDD();
+    });
+}
+
+function useFallbackStaff(){
+  /* Fallback：如果 API 讀唔到就用呢個 */
+  var fallback = ['Alice','Bob','Charlie','Diana','Elsa','Fiona'];
+  allStaff = fallback.map(function(n,i){ return {id:'s'+(i+1), name:n}; });
+  icList   = fallback.map(function(n,i){ return {id:'ic'+(i+1), name:n}; });
+}
 
 /* ══════════ IC ══════════ */
 function onICSelect(sel){if(!sel.value||selectedICs.length>=IC_MAX)return;selectedICs.push(sel.value);sel.value='';renderICChips();refreshICDD();}
@@ -444,15 +478,11 @@ function getCastle(){
 
 function recalc(){
   recalcEntry();
-
-  /* Castle auto-calc */
   const castle=getCastle();
   $('castleAlbAuto').textContent=Math.max(0,castle.alb);
   $('castleStoryAuto').textContent=Math.max(0,castle.story);
   if(castle.hasWarn){$('castleWarn').classList.remove('hidden');$('castleAutoCard').style.borderColor='#fca5a5';}
   else{$('castleWarn').classList.add('hidden');$('castleAutoCard').style.borderColor='';}
-
-  /* Per-card revenue */
   $('rev_all1980').textContent=fmt((v('all1980Alb')+v('all1980Story'))*1980);
   $('rev_crown1438').textContent=fmt(v('alb1438')*1438);
   $('rev_parade').textContent=fmt((v('alb1500')+v('story1500'))*1500);
@@ -460,32 +490,18 @@ function recalc(){
   $('rev_roving').textContent=fmt(v('rovFull')*1688+v('rovDisc')*1299);
   $('rev_soft').textContent=fmt(v('softcopy')*498);
   $('rev_photo').textContent=fmt(v('photo168')*168+v('photo130')*130);
-
-  /* Softcopy max = all $1,980 Albums + $1,500 Albums + Add-on Albums */
   $('softMax').textContent=v('all1980Alb')+v('alb1500')+v('addonAlb');
-
-  /* Total revenue (no double-count: 所有$1,980 is source of truth) */
-  const totalRev=(v('all1980Alb')+v('all1980Story'))*1980
-    +v('alb1438')*1438
-    +(v('alb1500')+v('story1500'))*1500
-    +(v('addonAlb')+v('addonStory'))*1688
-    +v('rovFull')*1688+v('rovDisc')*1299
-    +v('softcopy')*498
-    +v('photo168')*168+v('photo130')*130;
+  const totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130;
   $('liveRevenue').textContent='$'+fmt(totalRev);
   $('bottomRev').textContent='$'+fmt(totalRev);
-
-  /* Books sold */
   const books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
   $('liveSold').textContent=books+' 本';
-
   recalcPkgConv();
 }
 
 function recalcPkgConv(){
   const cq=v('crownQty'),pq=v('paradeQty'),sq=v('castleQty'),rq=v('royalQty'),tot=cq+pq+sq+rq;
   if(tot===0){$('pkgConv').classList.add('hidden');return;}
-
   const crownBook=v('crownAlb1980')+v('alb1438');
   const crownUp=v('crownAlb1980');
   const paradeSold=v('alb1500')+v('story1500');
@@ -493,7 +509,6 @@ function recalcPkgConv(){
   const castleUp=Math.max(0,castle.alb)+Math.max(0,castle.story);
   const royalSold=v('royalAlb1980')+v('royalStory1980');
   const mainBooks=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500');
-
   $('pkgConv').classList.remove('hidden');
   let h='';
   if(cq>0) h+=convRow('👑','Crown','bg-amber-50 text-amber-700',`做書 ${pct(crownBook,cq)}`,'bg-rose-50 text-rose-600',`$1,980↑ ${pct(crownUp,cq)}`);
@@ -504,15 +519,9 @@ function recalcPkgConv(){
   $('pkgConvBody').innerHTML=h;
 }
 
-function convRow(icon,name,cls1,txt1,cls2,txt2){
-  return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><div class="conv-badges"><span class="info-tag ${cls1}">${txt1}</span><span class="info-tag ${cls2}">${txt2}</span></div></div>`;
-}
-function convRowSingle(icon,name,cls,txt){
-  return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><span class="info-tag ${cls}">${txt}</span></div>`;
-}
-function convOverall(val){
-  return`<div class="conv-row" style="border-top:2px solid #fce7f3;padding-top:12px;margin-top:4px"><span class="conv-pkg">📈 Overall</span><span class="font-bold text-lg text-rose-600">${val}</span></div>`;
-}
+function convRow(icon,name,cls1,txt1,cls2,txt2){return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><div class="conv-badges"><span class="info-tag ${cls1}">${txt1}</span><span class="info-tag ${cls2}">${txt2}</span></div></div>`;}
+function convRowSingle(icon,name,cls,txt){return`<div class="conv-row"><span class="conv-pkg">${icon} ${name}</span><span class="info-tag ${cls}">${txt}</span></div>`;}
+function convOverall(val){return`<div class="conv-row" style="border-top:2px solid #fce7f3;padding-top:12px;margin-top:4px"><span class="conv-pkg">📈 Overall</span><span class="font-bold text-lg text-rose-600">${val}</span></div>`;}
 
 /* ══════════ NAV ══════════ */
 function scrollToSec(e){e.preventDefault();const id=e.target.dataset.sec;const el=$(id);if(!el)return;const navH=document.querySelector('.section-nav').offsetHeight;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-navH-10,behavior:'smooth'});}
@@ -597,7 +606,9 @@ function submitForm(){
   $('confirmModal').classList.remove('hidden');
 }
 
-/* ══════════ 真正提交（POST 去 Google Sheet）══════════ */
+/* ═══════════════════════════════════════════════════
+   🔧 FIX 2: 修正 fetch — 移除 no-cors，可讀取回應
+   ═══════════════════════════════════════════════════ */
 function doSubmit(){
   closeConfirm();
   saveAllRemarks();
@@ -605,7 +616,6 @@ function doSubmit(){
   btn.disabled=true;
   btn.textContent='⏳ 提交中...';
 
-  /* ── 計算數值 ── */
   var castle=getCastle();
   var totalRev=(v('all1980Alb')+v('all1980Story'))*1980
     +v('alb1438')*1438
@@ -618,7 +628,6 @@ function doSubmit(){
   var ic1=selectedICs[0]?icList.find(function(x){return x.id===selectedICs[0]}).name:'';
   var ic2=selectedICs[1]?icList.find(function(x){return x.id===selectedICs[1]}).name:'';
 
-  /* ── 組裝 payload（對應 Apps Script doPost） ── */
   var payload={
     daily:{
       date:$('fDate').value,
@@ -658,23 +667,54 @@ function doSubmit(){
     })
   };
 
-  /* ── POST 去 Apps Script ── */
-  fetch(API_URL,{
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(payload)
+  console.log('📤 送出 payload:', JSON.stringify(payload, null, 2));
+
+  /* 🔧 FIX: 先試 cors mode 讀回應，失敗再 fallback no-cors */
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+    redirect: 'follow'
   })
-  .then(function(){
-    btn.disabled=false;
-    btn.textContent='✅ 提交日報';
-    $('successModal').classList.remove('hidden');
-    spawnConfetti();
+  .then(function(res){ return res.text(); })
+  .then(function(text){
+    console.log('📥 Server 回應:', text);
+    btn.disabled = false;
+    btn.textContent = '✅ 提交日報';
+    var result;
+    try { result = JSON.parse(text); } catch(e) { result = null; }
+    if(result && result.status === 'ok'){
+      $('successModal').classList.remove('hidden');
+      spawnConfetti();
+    } else if(result && result.status === 'error'){
+      showErr('❌ Server 錯誤：' + (result.message || '未知'));
+    } else {
+      /* 如果回應唔係 JSON（例如 redirect HTML），當成功 */
+      $('successModal').classList.remove('hidden');
+      spawnConfetti();
+    }
   })
   .catch(function(err){
-    btn.disabled=false;
-    btn.textContent='✅ 提交日報';
-    showErr('❌ 提交失敗：'+err.message+'\n請檢查網絡連線後再試');
+    console.warn('⚠️ CORS fetch 失敗，改用 no-cors:', err.message);
+    /* Fallback: no-cors（送到但睇唔到回應） */
+    fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(){
+      btn.disabled = false;
+      btn.textContent = '✅ 提交日報';
+      $('successModal').classList.remove('hidden');
+      spawnConfetti();
+      console.log('📤 已用 no-cors 模式送出（無法確認 server 結果）');
+    })
+    .catch(function(err2){
+      btn.disabled = false;
+      btn.textContent = '✅ 提交日報';
+      showErr('❌ 提交失敗：' + err2.message + '\n請檢查網絡連線後再試');
+    });
   });
 }
 
@@ -694,12 +734,16 @@ function resetForm(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* ══════════ INIT ══════════ */
-window.addEventListener('DOMContentLoaded',()=>{
+/* ══════════════════════════════
+   🔧 FIX 3: INIT 時載入名單
+   ══════════════════════════════ */
+window.addEventListener('DOMContentLoaded',function(){
   $('fDate').value=new Date().toISOString().slice(0,10);
-  refreshICDD();refreshStaffDD();
-  renderEntryCards();renderStaff();
+  renderEntryCards();
   setupScrollSpy();
+
+  /* 從 Google Sheet 載入同事名單 */
+  loadStaffFromSheet();
 });
 </script>
 </body>
