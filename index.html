@@ -265,6 +265,42 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#fdf2f8;
         <div class="sale-row"><span class="sale-label">🖼️ $130 / 張</span><div class="stepper"><button type="button" onclick="adj('photo130',-1)">−</button><input type="number" inputmode="numeric" id="photo130" min="0" value="0" oninput="recalc()" onfocus="this.select()"><button type="button" onclick="adj('photo130',1)">+</button></div></div>
         <div class="flex justify-end mt-1"><span class="text-sm font-bold text-gray-600">= $<span id="rev_photo">0</span></span></div>
       </div>
+
+      <!-- ═══════ ✅ 新增：Storybook 運費 ═══════ -->
+      <div class="cat-card border-sky-300" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe)">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">📮</span><span class="font-bold text-base text-sky-700">Storybook 運費</span></div>
+        <div class="note mb-3">
+          寄香港 🇭🇰 免運費（快圖美自取）<br>
+          寄亞洲 🌏 每本 $300 · 寄外國 🌍 每本 $450<br>
+          今日 Storybook 總數：<strong id="sbTotalRef" class="text-sky-600">0</strong> 本
+        </div>
+        <div class="sale-row">
+          <span class="sale-label">🌏 亞洲 $300 / 本</span>
+          <div class="stepper">
+            <button type="button" onclick="adj('shipAsia',-1)">−</button>
+            <input type="number" inputmode="numeric" id="shipAsia" min="0" value="0" oninput="recalc()" onfocus="this.select()">
+            <button type="button" onclick="adj('shipAsia',1)">+</button>
+          </div>
+        </div>
+        <div class="sale-row">
+          <span class="sale-label">🌍 外國 $450 / 本</span>
+          <div class="stepper">
+            <button type="button" onclick="adj('shipIntl',-1)">−</button>
+            <input type="number" inputmode="numeric" id="shipIntl" min="0" value="0" oninput="recalc()" onfocus="this.select()">
+            <button type="button" onclick="adj('shipIntl',1)">+</button>
+          </div>
+        </div>
+        <div id="shipWarn" class="hidden mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">⚠️ 運費數量超過 Storybook 總數，請檢查</div>
+        <div class="flex items-center justify-between mt-2 pt-2 border-t border-sky-200">
+          <div class="flex gap-3 text-sm">
+            <span class="text-sky-600 font-bold">🇭🇰 <span id="shipHKCount">0</span></span>
+            <span class="text-amber-600 font-bold">🌏 <span id="shipAsiaCount">0</span></span>
+            <span class="text-violet-600 font-bold">🌍 <span id="shipIntlCount">0</span></span>
+          </div>
+          <span class="text-sm font-bold text-sky-600">= $<span id="rev_ship">0</span></span>
+        </div>
+      </div>
+
     </div>
 
     <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-5 border border-rose-200 mt-3">
@@ -338,7 +374,8 @@ var ENTRY_PKGS=[
   {id:'royalQty',name:'Royal',icon:'👸',bg:'bg-rose-50',bd:'border-rose-200',theme:'theme-rose'}
 ];
 
-var ALL_SALE_IDS=['all1980Alb','all1980Story','crownAlb1980','alb1438','royalAlb1980','royalStory1980','alb1500','story1500','addonAlb','addonStory','rovFull','rovDisc','softcopy','photo168','photo130'];
+/* ✅ 加咗 shipAsia + shipIntl */
+var ALL_SALE_IDS=['all1980Alb','all1980Story','crownAlb1980','alb1438','royalAlb1980','royalStory1980','alb1500','story1500','addonAlb','addonStory','rovFull','rovDisc','softcopy','photo168','photo130','shipAsia','shipIntl'];
 
 /* ══════════ STATE ══════════ */
 var selectedICs=[],addedStaff=[],staffRoles={},ratings={};
@@ -347,10 +384,6 @@ var v=function(id){var el=$(id);return el?parseInt(el.value)||0:0};
 var fmt=function(n){return n.toLocaleString()};
 var pct=function(a,b){return b>0?Math.round(a/b*100)+'%':'—'};
 
-/* ══════════════════════════════════════════
-   🔧 FIX 1+2: 改用 ?action=getSettings
-   並分開處理 staff 同 ic 兩個 list
-   ══════════════════════════════════════════ */
 function loadStaffFromSheet(){
   var loadingEl = $('staffLoading');
   fetch(API_URL + '?action=getSettings')
@@ -359,56 +392,30 @@ function loadStaffFromSheet(){
       console.log('📋 Settings API response:', text);
       var data;
       try { data = JSON.parse(text); } catch(e) { throw new Error('JSON parse failed'); }
-
-      /* ── Staff 名單 ── */
       if(data.staff && data.staff.length > 0){
         allStaff = [];
-        data.staff.forEach(function(name, i){
-          allStaff.push({ id: 's'+(i+1), name: name });
-        });
+        data.staff.forEach(function(name, i){ allStaff.push({ id: 's'+(i+1), name: name }); });
         console.log('✅ 已載入 ' + allStaff.length + ' 位同事:', allStaff.map(function(s){return s.name;}));
-      } else {
-        console.warn('⚠️ Sheet 無 staff 資料');
-        allStaff = [];
-      }
-
-      /* ── IC 名單（獨立讀取） ── */
+      } else { console.warn('⚠️ Sheet 無 staff 資料'); allStaff = []; }
       if(data.ic && data.ic.length > 0){
         icList = [];
-        data.ic.forEach(function(name, i){
-          icList.push({ id: 'ic'+(i+1), name: name });
-        });
+        data.ic.forEach(function(name, i){ icList.push({ id: 'ic'+(i+1), name: name }); });
         console.log('✅ 已載入 ' + icList.length + ' 位 IC:', icList.map(function(s){return s.name;}));
       } else {
-        /* 如果 IC 欄空白，就用 staff 名單做 fallback */
-        icList = allStaff.map(function(s, i){
-          return { id: 'ic'+(i+1), name: s.name };
-        });
+        icList = allStaff.map(function(s, i){ return { id: 'ic'+(i+1), name: s.name }; });
         console.warn('⚠️ Sheet 無獨立 IC 名單，用 Staff 名單做 IC');
       }
-
       if(allStaff.length > 0 || icList.length > 0){
         if(loadingEl) loadingEl.innerHTML = '✅ 已載入 ' + allStaff.length + ' 位同事 · ' + icList.length + ' 位 IC';
         setTimeout(function(){ if(loadingEl) loadingEl.style.display='none'; }, 1500);
-      } else {
-        useFallbackStaff();
-        if(loadingEl) loadingEl.innerHTML = '⚠️ Sheet 未有名單資料，用預設名單';
-      }
-
-      refreshICDD();
-      refreshStaffDD();
+      } else { useFallbackStaff(); if(loadingEl) loadingEl.innerHTML = '⚠️ Sheet 未有名單資料，用預設名單'; }
+      refreshICDD(); refreshStaffDD();
     })
     .catch(function(err){
       console.error('❌ 載入名單失敗:', err);
       useFallbackStaff();
-      if(loadingEl){
-        loadingEl.innerHTML = '⚠️ 未能連接 Google Sheet，用預設名單';
-        loadingEl.style.background = '#fee2e2';
-        loadingEl.style.borderColor = '#fca5a5';
-        loadingEl.style.color = '#b91c1c';
-      }
-      refreshICDD();
-      refreshStaffDD();
+      if(loadingEl){ loadingEl.innerHTML = '⚠️ 未能連接 Google Sheet，用預設名單'; loadingEl.style.background = '#fee2e2'; loadingEl.style.borderColor = '#fca5a5'; loadingEl.style.color = '#b91c1c'; }
+      refreshICDD(); refreshStaffDD();
     });
 }
 
@@ -495,6 +502,11 @@ function getCastle(){
   return{alb:cAlb,story:cStory,hasWarn:cAlb<0||cStory<0};
 }
 
+/* ✅ 計 Storybook 總數（用嚟做運費參考） */
+function getTotalStorybook(){
+  return v('all1980Story') + v('story1500') + v('addonStory');
+}
+
 function recalc(){
   recalcEntry();
   var castle=getCastle();
@@ -510,7 +522,27 @@ function recalc(){
   $('rev_soft').textContent=fmt(v('softcopy')*498);
   $('rev_photo').textContent=fmt(v('photo168')*168+v('photo130')*130);
   $('softMax').textContent=v('all1980Alb')+v('alb1500')+v('addonAlb');
-  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130;
+
+  /* ✅ 運費計算 */
+  var sbTotal = getTotalStorybook();
+  var sAsia = v('shipAsia');
+  var sIntl = v('shipIntl');
+  var sHK   = Math.max(0, sbTotal - sAsia - sIntl);
+  var shipRev = sAsia * 300 + sIntl * 450;
+  $('sbTotalRef').textContent = sbTotal;
+  $('shipHKCount').textContent = sHK;
+  $('shipAsiaCount').textContent = sAsia;
+  $('shipIntlCount').textContent = sIntl;
+  $('rev_ship').textContent = fmt(shipRev);
+  /* 運費超過 Storybook 總數警告 */
+  if((sAsia + sIntl) > sbTotal && sbTotal > 0){
+    $('shipWarn').classList.remove('hidden');
+  } else {
+    $('shipWarn').classList.add('hidden');
+  }
+
+  /* ✅ Total Revenue 加埋運費 */
+  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130+shipRev;
   $('liveRevenue').textContent='$'+fmt(totalRev);
   $('bottomRev').textContent='$'+fmt(totalRev);
   var books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
@@ -572,7 +604,9 @@ function submitForm(){
   addedStaff.forEach(function(sid){Array.from(staffRoles[sid]||[]).forEach(function(r){(CRITERIA[r]||[]).forEach(function(c){rT++;if(ratings[sid]&&ratings[sid][r+'_'+c.key]>0)rF++;});});});
   var rW=rF<rT?'<div class="bg-amber-50 rounded-lg p-3 text-sm text-amber-700">⚠️ 工作評分有 '+(rT-rF)+' 項未填</div>':'';
 
-  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130;
+  /* ✅ totalRev 包含運費 */
+  var shipRev = v('shipAsia') * 300 + v('shipIntl') * 450;
+  var totalRev=(v('all1980Alb')+v('all1980Story'))*1980+v('alb1438')*1438+(v('alb1500')+v('story1500'))*1500+(v('addonAlb')+v('addonStory'))*1688+v('rovFull')*1688+v('rovDisc')*1299+v('softcopy')*498+v('photo168')*168+v('photo130')*130+shipRev;
   var icN=selectedICs.map(function(id){return icList.find(function(x){return x.id===id}).name}).join('、');
   var tH=addedStaff.filter(function(sid){return staffRoles[sid]&&staffRoles[sid].size>0}).map(function(sid){var s=allStaff.find(function(x){return x.id===sid});return'<span class="font-semibold">'+s.name+'</span> <span class="text-gray-400">'+Array.from(staffRoles[sid]).map(function(r){return ROLE_LABEL[r]}).join(' ')+'</span>';}).join('<br>');
 
@@ -587,6 +621,21 @@ function submitForm(){
   if(sq>0)convHtml+='<div class="flex justify-between"><span>🏰 Castle 升級</span><span class="font-bold">'+pct(castleUp,sq)+'</span></div>';
   if(rq>0)convHtml+='<div class="flex justify-between"><span>👸 Royal 做書</span><span class="font-bold">'+pct(royalSold,rq)+'</span></div>';
   convHtml+='<div class="flex justify-between border-t border-gray-200 pt-2 mt-2"><span class="font-bold">📈 Overall</span><span class="font-bold text-rose-600">'+pct(mainBooks,tot)+'</span></div>';
+
+  /* ✅ 運費確認顯示 */
+  var sbTotal = getTotalStorybook();
+  var sAsia = v('shipAsia'), sIntl = v('shipIntl');
+  var sHK = Math.max(0, sbTotal - sAsia - sIntl);
+  var shipHtml = '';
+  if(sbTotal > 0){
+    shipHtml = '<div class="bg-sky-50 rounded-lg p-3 text-sm space-y-1 border border-sky-200">'+
+      '<div class="font-bold text-sky-700 mb-1">📮 Storybook 運費</div>'+
+      '<div class="flex justify-between"><span>🇭🇰 香港（免運費）</span><span class="font-bold">'+sHK+' 本</span></div>'+
+      '<div class="flex justify-between"><span>🌏 亞洲（$300）</span><span class="font-bold">'+sAsia+' 本</span></div>'+
+      '<div class="flex justify-between"><span>🌍 外國（$450）</span><span class="font-bold">'+sIntl+' 本</span></div>'+
+      '<div class="flex justify-between border-t border-sky-200 pt-1 mt-1"><span>📮 運費收入</span><span class="font-bold text-sky-600">$'+fmt(shipRev)+'</span></div>'+
+    '</div>';
+  }
 
   $('confirmBody').innerHTML=
     '<div class="bg-pink-50 rounded-lg p-3 text-sm space-y-1">'+
@@ -614,6 +663,7 @@ function submitForm(){
       '<div class="font-bold text-purple-700 mb-1">📈 轉化 / 升級率</div>'+
       convHtml+
     '</div>'+
+    shipHtml+
     '<div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg p-3 text-sm flex justify-between items-center border border-rose-200">'+
       '<span class="font-bold text-rose-600">💰 Total Revenue</span>'+
       '<span class="text-xl font-black text-rose-600">$'+fmt(totalRev)+'</span>'+
@@ -625,9 +675,6 @@ function submitForm(){
   $('confirmModal').classList.remove('hidden');
 }
 
-/* ═══════════════════════════════════════════════════
-   🔧 FIX 3: status === 'success'（唔係 'ok'）
-   ═══════════════════════════════════════════════════ */
 function doSubmit(){
   closeConfirm();
   saveAllRemarks();
@@ -636,13 +683,17 @@ function doSubmit(){
   btn.textContent='⏳ 提交中...';
 
   var castle=getCastle();
+
+  /* ✅ totalRev 包含運費 */
+  var shipRev = v('shipAsia') * 300 + v('shipIntl') * 450;
   var totalRev=(v('all1980Alb')+v('all1980Story'))*1980
     +v('alb1438')*1438
     +(v('alb1500')+v('story1500'))*1500
     +(v('addonAlb')+v('addonStory'))*1688
     +v('rovFull')*1688+v('rovDisc')*1299
     +v('softcopy')*498
-    +v('photo168')*168+v('photo130')*130;
+    +v('photo168')*168+v('photo130')*130
+    +shipRev;
   var books=v('all1980Alb')+v('all1980Story')+v('alb1438')+v('alb1500')+v('story1500')+v('addonAlb')+v('addonStory')+v('rovFull')+v('rovDisc');
   var ic1=selectedICs[0]?icList.find(function(x){return x.id===selectedICs[0]}).name:'';
   var ic2=selectedICs[1]?icList.find(function(x){return x.id===selectedICs[1]}).name:'';
@@ -663,7 +714,11 @@ function doSubmit(){
       roving_1688:v('rovFull'), roving_1299:v('rovDisc'),
       softcopy_498:v('softcopy'), photo_168:v('photo168'), photo_130:v('photo130'),
       total_revenue:totalRev, total_books:books,
-      remarks:$('fRemarks').value
+      remarks:$('fRemarks').value,
+
+      /* ✅ 新增：運費欄位（對齊 Apps Script） */
+      shipping_asia_300: v('shipAsia'),
+      shipping_intl_450: v('shipIntl')
     },
     ratings:addedStaff.map(function(sid){
       var s=allStaff.find(function(x){return x.id===sid});
@@ -701,7 +756,6 @@ function doSubmit(){
     btn.textContent = '✅ 提交日報';
     var result;
     try { result = JSON.parse(text); } catch(e) { result = null; }
-    /* 🔧 FIX 3: 改成 'success' 對應 Apps Script 回傳 */
     if(result && result.status === 'success'){
       $('successModal').classList.remove('hidden');
       spawnConfetti();
