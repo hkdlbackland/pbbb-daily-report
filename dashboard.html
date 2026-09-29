@@ -223,7 +223,53 @@ function PBBBDashboard(){
   function handleAddIC(){if(newICName.trim()){var u=icList.concat([newICName.trim()]);setICList(u);setNewICName("");syncSettings(staffList,u)}}
   function handleRemoveIC(n){var u=icList.filter(x=>x!==n);setICList(u);syncSettings(staffList,u)}
 
-  useEffect(function(){var t=Date.now();function fetchJSON(url,ms){return Promise.race([fetch(url).then(function(r){return r.json()}),new Promise(function(_,rej){setTimeout(function(){rej(new Error("timeout"))},ms||20000)})]).catch(function(){return null})}Promise.all([fetchJSON(SHEET_API_URL+"?t="+t,120000),fetchJSON(SHEET_API_URL+"?action=getSettings&t="+t,30000),fetchJSON(SHEET_API_URL+"?action=getNsOverrides&t="+t,30000)]).then(function(res){var data=res[0],settings=res[1],nsR=res[2];console.log("📡 主數據:",data?"✅ 收到 "+((data.daily||[]).length)+" 行":"❌ null");console.log("⚙️ Settings:",settings?"✅":"❌");console.log("💎 NS:",nsR?"✅":"❌");if(data&&data.status==="success"&&data.daily&&data.daily.length>0){setSheetData(data);setDataSource("real");var ld=data.daily[data.daily.length-1].Date||"";var p=ld.split("-");if(p.length>=2){setSelYear(parseInt(p[0]));setSelMon(parseInt(p[1]))}}else setDataSource("empty");var sf=settings&&settings.status==="success"&&settings.staff&&settings.staff.length>0?settings.staff:null;var icf=settings&&settings.status==="success"&&settings.ic&&settings.ic.length>0?settings.ic:null;if(data&&data.status==="success"){if(!sf&&data.ratings){var nm={};data.ratings.forEach(r=>{if(r.Staff_Name)nm[r.Staff_Name]=true});var nl=Object.keys(nm);if(nl.length>0)setStaffList(nl)}if(!icf&&data.daily){var ics={};data.daily.forEach(r=>{if(r.IC1)ics[r.IC1]=true;if(r.IC2)ics[r.IC2]=true});var icn=Object.keys(ics).filter(n=>n.trim());if(icn.length>0)setICList(icn)}}if(sf)setStaffList(sf);if(icf)setICList(icf);if(nsR&&nsR.status==="success"&&nsR.overrides)setNsOverrides(nsR.overrides);setLoading(false)}).catch(function(err){console.log("❌ fetch 全部失敗:",err);setDataSource("empty");setLoading(false)})},[]);
+  /* ═══════════════════════════════════════════════
+     ✅ 改咗：用 getAll 一個 call 攞晒所有數據
+     原本 3 個 fetch → 而家 1 個
+     ═══════════════════════════════════════════════ */
+  useEffect(function(){
+    var t=Date.now();
+    fetch(SHEET_API_URL+"?action=getAll&t="+t)
+      .then(function(r){return r.json()})
+      .then(function(d){
+        console.log("📡 getAll:",d?"✅ 收到 "+((d.daily||[]).length)+" daily + "+((d.ratings||[]).length)+" ratings":"❌ null");
+
+        if(d&&d.status==="success"&&d.daily&&d.daily.length>0){
+          setSheetData({daily:d.daily,ratings:d.ratings||[]});
+          setDataSource("real");
+          var ld=d.daily[d.daily.length-1].Date||"";
+          var p=ld.split("-");
+          if(p.length>=2){setSelYear(parseInt(p[0]));setSelMon(parseInt(p[1]))}
+        }else{
+          setDataSource("empty");
+        }
+
+        var sf=d&&d.staff&&d.staff.length>0?d.staff:null;
+        var icf=d&&d.ic&&d.ic.length>0?d.ic:null;
+
+        if(d&&d.status==="success"){
+          if(!sf&&d.ratings){
+            var nm={};d.ratings.forEach(function(r2){if(r2.Staff_Name)nm[r2.Staff_Name]=true});
+            var nl=Object.keys(nm);if(nl.length>0)setStaffList(nl)
+          }
+          if(!icf&&d.daily){
+            var ics={};d.daily.forEach(function(r2){if(r2.IC1)ics[r2.IC1]=true;if(r2.IC2)ics[r2.IC2]=true});
+            var icn=Object.keys(ics).filter(function(n){return n.trim()});if(icn.length>0)setICList(icn)
+          }
+        }
+        if(sf)setStaffList(sf);
+        if(icf)setICList(icf);
+
+        if(d&&d.nsOverrides)setNsOverrides(d.nsOverrides);
+
+        setLoading(false);
+      })
+      .catch(function(err){
+        console.log("❌ getAll 失敗:",err);
+        setDataSource("empty");
+        setLoading(false);
+      });
+  },[]);
 
   var generatedData=useMemo(()=>sheetData?transformAPIData(sheetData,staffList):{months:[],daily:[]},[sheetData,staffList]);
   var allMonths=generatedData.months,dailyData=generatedData.daily;
